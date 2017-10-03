@@ -2,6 +2,7 @@
 #define GRAFO_H
 #include <list>
 #include <vector>
+#include <set>
 #include "Arco.h"
 
 // using namespace std;
@@ -59,7 +60,7 @@
 			std::list<Arco> lista_arcos;
 //			std::vector< std::list<Arco> >vertices;
 			struct nodo{
-				int estado;
+				std::set<int> estado;
 				int utilidad;
 				std::list<Arco> lista_arcos;	
 				};

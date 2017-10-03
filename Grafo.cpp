@@ -1,5 +1,6 @@
 #include <vector>
 #include <list>
+#include <set>
 #include "iostream"
 #include "Grafo.h"
 
