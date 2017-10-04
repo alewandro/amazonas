@@ -9,7 +9,7 @@ using namespace std;
 
 /* 
 TABLERO: 
- tablero de 10 x 10
+ tablero de 10 x 10  (la representacion va de 0 a 9)
  para usar costo arco numerico (int costo)
  paso todo a numeros
  
@@ -52,7 +52,140 @@ JUGADA VALIDA: calcula todas las jugadas
 
 
 */
+string devolver_notacion(int set_member){
+	string notacion;
+	int fila= set_member % 10;
+	int columna= ((set_member - fila) % 100)/10;
+	int ficha= (set_member - fila - columna * 10)/100;
 
+	switch (ficha){
+		case 1:{
+			notacion= "R1 ";
+			}
+		break;
+		case 2:{
+			notacion= "R2 ";
+			}
+		break;
+		case 3:{
+			notacion= "R3 ";
+			}
+		break;
+		case 4:{
+			notacion= "R4 ";
+			}
+		break;
+		case 5:{
+			notacion= "A1 ";
+			}
+		break;
+		case 6:{
+			notacion= "A2 ";
+			}
+		break;
+		case 7:{
+			notacion= "A3 ";
+			}
+		break;
+		case 8:{
+			notacion= "A4 ";
+			}
+		break;
+		case 9:{
+			notacion= "X ";
+			}
+		break;
+
+	}
+
+	switch (columna){
+		case 0:{
+			notacion += "A";
+			}
+		break;
+		case 1:{
+			notacion += "B";
+			}
+		break;
+		case 2:{
+			notacion += "C";
+			}
+		break;
+		case 3:{
+			notacion += "D";
+			}
+		break;
+		case 4:{
+			notacion += "E";
+			}
+		break;
+		case 5:{
+			notacion += "F";
+			}
+		break;
+		case 6:{
+			notacion += "G";
+			}
+		break;
+		case 7:{
+			notacion += "H";
+			}
+		break;
+		case 8:{
+			notacion += "I";
+			}
+		break;
+		case 9:{
+			notacion += "J";
+			}
+		break;
+	}
+
+	switch (fila){
+		case 0:{
+			notacion += "1";
+			}
+		break;
+		case 1:{
+			notacion += "2";
+			}
+		break;
+		case 2:{
+			notacion += "3";
+			}
+		break;
+		case 3:{
+			notacion += "4";
+			}
+		break;
+		case 4:{
+			notacion += "5";
+			}
+		break;
+		case 5:{
+			notacion += "6";
+			}
+		break;
+		case 6:{
+			notacion += "7";
+			}
+		break;
+		case 7:{
+			notacion += "8";
+			}
+		break;
+		case 8:{
+			notacion += "9";
+			}
+		break;
+		case 9:{
+			notacion += "10";
+			}
+		break;
+	}
+
+	return notacion;
+}
 
 void imprimir_menu(){
 	cout << string(50, '\n');
@@ -134,13 +267,13 @@ void imprime_ficha(set<int> &estado_actual, int casillero){
 	int A1= 500 + columna * 10 + fila;
 	int X=  900 + columna * 10 + fila;
 
-	for (int i= 0; i<=3; i++)
+	for (int i= 0; i<=3; i++)						// chequea las 4 reinas rojas
 		if (estado_actual.count(R1 + i * 100)){
 			cout << "R";
 			return;
 		}
 
-	for (int i= 0; i<=3; i++)
+	for (int i= 0; i<=3; i++)						// chequea las 4 reinas azules
 		if (estado_actual.count(A1 + i * 100)){
 			cout << "A";
 			return;
@@ -182,6 +315,30 @@ void imprimir_tablero(set<int> &estado_actual){
 	cout << endl;
 
 }
+
+void imprimir_set(set<int> un_set){
+	set<int>::iterator it= un_set.begin();
+	
+  	for (it; it!=un_set.end(); ++it)
+    	cout << devolver_notacion(*it) << " - ";	// cout << " " << *it;
+  	cout << endl;
+}
+
+void imprimir_submenu(){
+	cout << "  0 - salir" << endl;
+	cout << "  1 - jugadas posibles" << endl;
+	cout << "  2 - mover pieza" << endl;
+	cout << "  3 - disparar flecha" << endl;
+}
+
+
+//////////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////////
+
+
+
+
 
 bool casilla_ocupada(set<int> &estado, int columna, int fila){
 	
@@ -229,13 +386,13 @@ void posiciones_validas(set<int> &estado, int ubicacion, set<int> &pos_validas){
 
 	it_fila= fila + 1;			// porque en fila esta la ficha
 	while ( it_fila <=9 && !casilla_ocupada(estado, columna, it_fila)){
-		pos_validas.insert(ficha + columna + it_fila);
+		pos_validas.insert(ficha + columna * 10 + it_fila);
 		it_fila++;
 	}
 
 	it_fila= fila - 1;			// porque en fila esta la ficha
 	while ( it_fila >=0 && !casilla_ocupada(estado, columna, it_fila)){
-		pos_validas.insert(ficha + columna + it_fila);
+		pos_validas.insert(ficha + columna * 10 + it_fila);
 		it_fila--;
 	}
 
@@ -274,13 +431,54 @@ void posiciones_validas(set<int> &estado, int ubicacion, set<int> &pos_validas){
 	}
 }
 
+void jugar(set<int> &estado_actual){
+
+   	set<int> pos_validas;
+    imprimir_submenu();
+            		
+	int opcion;
+	cin >> opcion;
+
+    while (opcion != 0){
+        switch (opcion){
+            case 1:{						// jugadas posibles
+            		posiciones_validas(estado_actual, 260, pos_validas);
+            		imprimir_set(pos_validas);
+            		cout << endl << "Presione <ENTER> para continuar..";
+			        cin.ignore();
+			        cin.ignore();
+            	}
+                break;
+	
+            default:{
+            	    cout <<  endl << "Opción invalida\n" << "Ingrese una nueva opción\n";
+            	}
+            break;
+        	}
+    
+   		imprimir_tablero(estado_actual);
+    	imprimir_submenu();
+
+        cin >> opcion;
+	
+
+    }
 
 
+
+}
+
+
+
+//////////////////////////////////////////////////////////////////////////////////////
+//								MAIN												//
+//////////////////////////////////////////////////////////////////////////////////////
 
 int main(){
 	set<int> estado_actual;
+
 	// define estado inicial: ubicacion de las 4 reinas de cada color
-	estado_actual= {130, 260, 303, 493, 539, 669, 707, 897, 945};
+	estado_actual= {130, 260, 303, 493, 539, 669, 707, 897, 965};
 
 	imprimir_menu();
 	int opcion;
@@ -290,6 +488,7 @@ int main(){
         switch (opcion){
             case 1:{						// jugar
             		imprimir_tablero(estado_actual);
+            		jugar(estado_actual);
             	}
                 break;
 	
@@ -298,6 +497,8 @@ int main(){
             	}
             break;
         	}
+
+       	imprimir_menu();
 
         cin >> opcion;
 	
