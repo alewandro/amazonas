@@ -13,8 +13,6 @@ PROBLEMAS:
 
 - ENTRA EN LOOP AL INGRESAR VALOR ALFANUMERICO EN SUBMENU JUGAR!!
 
-- FALTA CHEQUEAR QUE LA PIEZA a mover LE PERTENEZCA AL JUGADOR!!
-(que no pueda mover ni las azules ni las x)
 
 - Mejorar disparo de flecha!!
 
@@ -174,7 +172,7 @@ void imprimir_tablero(set<int> &estado_actual){
 	cout << "        A   B   C   D   E   F   G   H   I   J" << endl;
 	cout << "      o---------------------------------------o" << endl;
 
-	string tablero("   10 | v : v : v : v : v : v : v : v : v : v |n      |---------------------------------------|n    9 | v : v : v : v : v : v : v : v : v : v |n      |---------------------------------------|n    8 | v : v : v : v : v : v : v : v : v : v |n      |---------------------------------------|n    7 | v : v : v : v : v : v : v : v : v : v |n      |---------------------------------------|n    6 | v : v : v : v : v : v : v : v : v : v |n      |---------------------------------------|n    5 | v : v : v : v : v : v : v : v : v : v |n      |---------------------------------------|n    4 | v : v : v : v : v : v : v : v : v : v |n      |---------------------------------------|n    3 | v : v : v : v : v : v : v : v : v : v |n      |---------------------------------------|n    2 | v : v : v : v : v : v : v : v : v : v |n      |---------------------------------------|n    1 | v : v : v : v : v : v : v : v : v : v |n      o---------------------------------------on");
+	string tablero("   10 | v : v : v : v : v : v : v : v : v : v | 10n      |---------------------------------------|n    9 | v : v : v : v : v : v : v : v : v : v | 9n      |---------------------------------------|n    8 | v : v : v : v : v : v : v : v : v : v | 8n      |---------------------------------------|n    7 | v : v : v : v : v : v : v : v : v : v | 7n      |---------------------------------------|n    6 | v : v : v : v : v : v : v : v : v : v | 6n      |---------------------------------------|n    5 | v : v : v : v : v : v : v : v : v : v | 5n      |---------------------------------------|n    4 | v : v : v : v : v : v : v : v : v : v | 4n      |---------------------------------------|n    3 | v : v : v : v : v : v : v : v : v : v | 3n      |---------------------------------------|n    2 | v : v : v : v : v : v : v : v : v : v | 2n      |---------------------------------------|n    1 | v : v : v : v : v : v : v : v : v : v | 1n      o---------------------------------------on        A   B   C   D   E   F   G   H   I   Jn");
 
 	for (string::iterator it=tablero.begin(); it!=tablero.end(); ++it){
     	if (*it == 'n')
@@ -215,15 +213,7 @@ string devolver_notacion(int set_member){
 	return notacion;
 }
 
-/*
-int devolver_codigo_numerico(string notacion){
-	int codigo_numerico;
 
-
-
-	return codigo_numerico;
-}
-*/
 void imprimir_set(set<int> un_set){
 	set<int>::iterator it= un_set.begin();
 	
@@ -236,7 +226,7 @@ void imprimir_submenu(){
 	cout << "  0 - salir" << endl;
 	cout << "  1 - jugadas posibles" << endl;
 	cout << "  2 - mover pieza" << endl;
-	cout << "  3 - disparar flecha" << endl;
+	cout << "  3 - mueve NegaMax" << endl;
 }
 
 
@@ -251,7 +241,7 @@ void imprimir_submenu(){
 
 // devuelve el codigo de la ficha que esta en tal fila, tal columna. 
 // devuelve -1 si no hay nada
-int devolver_codigo_ficha(set<int> &estado, int columna, int fila){
+int obtener_codigo_ficha(set<int> &estado, int columna, int fila){
 	int casillero= columna * 10 + fila;
 
 	if (estado.count(casillero + 100)) return 100;		// busca R1
@@ -264,7 +254,7 @@ int devolver_codigo_ficha(set<int> &estado, int columna, int fila){
 	if (estado.count(casillero + 800)) return 800;		// busca A4
 	if (estado.count(casillero + 900)) return 900;		// busca X
 	
-	return -1;											// no encontro nada
+	return 0;											// no encontro nada
 
 }
 
@@ -314,38 +304,15 @@ void obtener_fila_columna(string &notacion, int &columna, int &fila){
 
 }
 
-// devuelve el codigo numerico de una pieza en un lugar tipo notacion
-// devuelve -1 si fila o columna estan mal
-// devuelve -2 si la casilla esta vacia
-
-int devolver_codigo(set<int> &estado, string &notacion){		// lo pasa x ref para corregirlo si es minuscula
-	int columna, fila;
-	
-	obtener_fila_columna(notacion, columna, fila);
-	
-	if (columna == -1 || fila == -1)
-		return -1;									// columna o fila incorrectos
-
-	int ficha= devolver_codigo_ficha(estado, columna, fila); 
-	
-	if (ficha == -1)
-		return -2;									// no hay nada en esa posicion 
-	else
-		return ficha + columna * 10 + fila;			// retorna el codigo numerico completo
-	
-
-}
-
-
 // devuelve un set de posiciones validas para una ficha en un lugar(numerico)
-void posiciones_validas(set<int> &estado, int ubicacion, set<int> &pos_validas){
+void posiciones_validas(set<int> &estado, int codigo_o, set<int> &pos_validas){
 	// ubicacion es ficha+x+y   (ficha+columna+fila)
 	// 123, 547, etc a las que chequearle las jugadas validas
 
 	int it_col, it_fila; 							// iteradores de fila y columna
-	int fila= ubicacion % 10;
-	int columna= ((ubicacion - fila) % 100)/10;
-	int ficha= ubicacion - fila - columna * 10;   	// 100, 200, etc
+	int fila= codigo_o % 10;
+	int columna= ((codigo_o - fila) % 100)/10;
+	int ficha= codigo_o - fila - columna * 10;   	// 100, 200, etc
 
 	pos_validas.clear();
 	
@@ -412,130 +379,199 @@ void posiciones_validas(set<int> &estado, int ubicacion, set<int> &pos_validas){
 
 
 // busca el destino en el set de jugadas posibles
-bool destino_valido(set<int> &estado, int codigo_origen, string destino){
-	// string notacion;
-	int codigo_destino, columna, fila, ficha;
-
-	obtener_fila_columna(destino, columna, fila);
-	ficha= devolver_codigo_ficha(estado, (codigo_origen % 100 - codigo_origen % 10)/10, codigo_origen % 10);
-	codigo_destino= ficha + columna * 10 + fila;
+bool destino_valido(set<int> &estado, int codigo_o, int codigo_d){
 
 	set<int> pos_validas;
-	posiciones_validas(estado, codigo_origen, pos_validas);
+	posiciones_validas(estado, codigo_o, pos_validas);
 	set<int>::iterator it= pos_validas.begin();
 	
   	for (it; it!=pos_validas.end(); ++it){
-    	// notacion= devolver_notacion(*it);
-    	if (codigo_destino == *it) return true;
+    	if (codigo_d == *it) return true;
   	}
 
   	return false;
 }
 
 
-void mover_ficha(set<int> &estado_actual, int origen, string destino){
-	int columna, fila;
+void mover_ficha(set<int> &estado, int codigo_o, int codigo_d){
 
 	// elimina del set estado actual el origen
 	// si es flecha no lo va a poder borrar
-	estado_actual.erase(origen);				
+	estado.erase(codigo_o);				
 	
-	obtener_fila_columna(destino, columna, fila);
-
-	int ficha= origen - origen % 100;
-
-	estado_actual.insert(ficha + columna * 10 + fila);
+	estado.insert(codigo_d);
 
 }
 
-void jugar(set<int> &estado_actual){
+void genera_estados_posibles(set<int> &estado, int codigo_o, list< set<int> > &lista_estados){
+	set<int> estado_posible;
+	set<int> pos_validas;
+	set<int> disparos_validos;
+	int codigo; 
 
+	// calcula posiciones validas de movida para la pieza
+	posiciones_validas(estado, codigo_o, pos_validas);
+	cout << "posiciones_validas para " << codigo_o << " : " << pos_validas.size() << endl;
+
+	// para c/jugada posible mueve la ficha
+	set<int>::iterator it= pos_validas.begin();
+	for (it; it!=pos_validas.end(); it++){
+		estado_posible= estado;								// copia el estado original y trabaja con la copia
+		mover_ficha(estado_posible, codigo_o, *it);
+
+		// disparos validos posibles EN ese estado posible
+		codigo= *it/100;									// por ser int, me da el codigo de ficha
+		codigo= codigo * 100;					
+		codigo = *it - codigo + 900;						// codigo disparo
+		posiciones_validas(estado_posible, codigo, disparos_validos);
+		cout << "disparos validos para posicion " << codigo << " --> " << disparos_validos.size() << endl;
+
+
+		// para c/disparo posible genera un estado y lo agrega a la lista
+		set<int>::iterator it_disparo= disparos_validos.begin();
+		for (it_disparo; it_disparo!=disparos_validos.end(); it_disparo++){		
+			estado_posible.insert(*it_disparo);  			//inserta un disparo en estado
+			lista_estados.push_back(estado_posible);
+			estado_posible.erase(*it_disparo);				//borra el disparo para insertar el q sigue
+		}
+	}
+
+	cout << "lista de estado_posible: " << lista_estados.size() << endl; 
+}
+
+void jugar(set<int> &estado){
+
+	int eleccion, fila_o, columna_o, ficha_o, fila_d, columna_d, ficha_d, codigo_o, codigo_d;		// x, y, ficha y codigo  origen / destino
+	string origen, destino;
    	set<int> pos_validas;
     
-    imprimir_submenu();  // do, codigo_origen, pos_validas);
-	// set<int>::iterator it= pos_validas.begin()
+    imprimir_submenu();
             		
-	int eleccion;
 	cin >> eleccion;
 
     while (eleccion != 0){
         switch (eleccion){
             case 1:{						// jugadas posibles
-            		cout << "Ingrese Origen (Letra Numero: A10): " << endl;
-            		string origen;
+            		cout << "Ingrese Origen: ";
             		cin >> origen;
-            		int codigo= devolver_codigo(estado_actual, origen);
-            		cout << " el codigo de su notacion es: " << codigo << endl;
-            		if (codigo > -1){
-	            		posiciones_validas(estado_actual, codigo, pos_validas);
-	            		imprimir_set(pos_validas);
-	            	}else{
-	            		cout << "Codigo Incorrecto o no existen fichas en ese lugar ! " << endl;
-	            	}
+
+            		obtener_fila_columna(origen, columna_o, fila_o);
+            		if (columna_o == -1 || fila_o == -1){
+            			cout << "Fila o Columna Incorrecta" << endl;
+            			break;
+            		}
+            		
+            		ficha_o= obtener_codigo_ficha(estado, columna_o, fila_o);
+            		if (!ficha_o || ficha_o == 900){
+            			cout << "No hay fichas suyas para mover en ese casillero" << endl;
+            			break;
+            		}
+            		
+            		codigo_o= ficha_o + columna_o * 10 + fila_o;
+					posiciones_validas(estado, codigo_o, pos_validas);
+	            	imprimir_set(pos_validas);
 
             	}
                 break;
             case 2:{						// mover ficha
-            		cout << "Ingrese Origen (Letra Numero: A10): ";
-            		string posicion;
-            		int codigo_origen, destino, fil, col, ficha;
+            		
+            		cout << "Ingrese Origen: ";
+            		cin >> origen;
 
-            		cin >> posicion;
-            		codigo_origen= devolver_codigo(estado_actual, posicion);
-            		cout << " el codigo de su notacion es: " << codigo_origen << endl;
-            		if (codigo_origen == -1){
-	            		cout << "Codigo Incorrecto o no existen fichas en ese lugar ! " << endl;
-	            		break;
+            		obtener_fila_columna(origen, columna_o, fila_o);
+            		if (columna_o == -1 || fila_o == -1){
+            			cout << "Fila o Columna Incorrecta" << endl;
+            			break;
+            		}
+            		
+            		ficha_o= obtener_codigo_ficha(estado, columna_o, fila_o);
+            		if (!ficha_o || ficha_o == 900 || ficha_o == 500 || 
+            			ficha_o == 600 || ficha_o == 700 || ficha_o == 800){
+            			cout << "No hay fichas suyas para mover en ese casillero" << endl;
+            			break;
+            		}
+            		
+            		codigo_o= ficha_o + columna_o * 10 + fila_o;
+
+            		// idem para el destino
+            		cout << "Ingrese Destino: ";
+            		cin >> destino;
+
+            		obtener_fila_columna(destino, columna_d, fila_d);
+            		if (columna_d == -1 || fila_d == -1){
+            			cout << "Fila o Columna Incorrecta" << endl;
+            			break;
+            		}
+            		
+            		ficha_d= obtener_codigo_ficha(estado, columna_d, fila_d);
+            		if (ficha_d){
+            			cout << "Casilla Ocupada!" << endl;
+            			break;
+            		}
+            		
+            		ficha_d= ficha_o;								// es la misma ficha que va a otro lado
+            		codigo_d= ficha_d + columna_d * 10 + fila_d;
+
+            		if (destino_valido(estado, codigo_o, codigo_d)){
+	            		mover_ficha(estado, codigo_o, codigo_d);
+	   					imprimir_tablero(estado);
+	   				}else{
+	   					cout << "Destino Inalcanzable !!";
+	   					break;
+	   				}
+
+   					// flecha
+
+	   				codigo_o= codigo_d;								// la flecha sale de la reina anterior
+   					ficha_d= 1; 									// para la condicion del while
+
+	   				while (columna_d == -1 || fila_d == -1 || ficha_d || !destino_valido(estado, codigo_o, codigo_d)){	
+	            		cout << "Ingrese Destino de la Flecha: ";
+	            		cin >> destino;
+
+	            		obtener_fila_columna(destino, columna_d, fila_d);
+	            		if (columna_d == -1 || fila_d == -1){
+	            			cout << "Fila o Columna Incorrecta" << endl;
+	            		}
+	            		
+	            		ficha_d= obtener_codigo_ficha(estado, columna_d, fila_d);			// chequea si esta vacia!
+	            		if (ficha_d){
+	            			cout << "Casilla Ocupada!" << endl;
+	            		}
+	            		codigo_d= ficha_o + columna_d * 10 + fila_d;
+	   
+	               		if (!destino_valido(estado, codigo_o, codigo_d)){
+	            			cout << "Destino Inalcanzable !!" << endl;
+	            		}
+
+
 	            	}
-	            	//
-	            	// FALTA CHEQUEAR QUE SEA UNA PIEZA QUE LE PERTENEZCA AL JUGADOR!!
 
-	            	cout << "Ingrese Destino (Letra Numero: A10): " ;
-
-            		cin >> posicion;
-            		destino= devolver_codigo(estado_actual, posicion);
-            		cout << destino << endl;
-            		if (destino == -1){
-	            		cout << "Fila o Columna Incorrectos! " << endl;
-	            		break;
-	            	}
-	            	
-	            	// posiciones_validas(estado_actual, codigo_origen, pos_validas); // crea set de validas para posicion origen
-	            	// imprimir_set(pos_validas);
-	            	
-	            	// cout << destino_valido(estado_actual, codigo_origen, posicion);
-
-	            	if (destino_valido(estado_actual, codigo_origen, posicion)){
-	            		mover_ficha(estado_actual, codigo_origen, posicion);
-   						imprimir_tablero(estado_actual);
-   						
-   						obtener_fila_columna(posicion, col, fil);
-   						ficha= devolver_codigo_ficha(estado_actual, col, fil);
-   						codigo_origen= ficha + col * 10 + fil; 						//la flecha sale del lugar de la reina
-   						cout << "origen flecha " << posicion << " " << col << fil << endl;
-   						
-   						destino= -1; // setea para el while
-   						while (destino < 0){
-	   						cout << "Ingrese Destino de la Flecha: ";
-	   						cin >> posicion;
-		            		
-		            		destino= devolver_codigo(estado_actual, posicion);
-		            		
-		            		if (destino == -1){
-			            		cout << "Fila o Columna Incorrectos! (-1)" << endl;
-			            		break;
-		            		}else if (destino == -2){
-			            		cout << "destino flecha vacio (-2)--> ok " << endl;
-			            	}
-			            	if (destino_valido(estado_actual, codigo_origen, posicion)){
-				            	codigo_origen= codigo_origen - ficha + 900; 				// transforma en flecha
-			            		mover_ficha(estado_actual, codigo_origen, posicion);
-			            	}
-			            }	
-	            	}
-	            	
+            		ficha_d = 900;
+            		codigo_d= ficha_d + columna_d * 10 + fila_d;
+   					codigo_o= codigo_o - ficha_o + ficha_d;								// el origen de la flecha es el destino de la reina anterior
+            		mover_ficha(estado, codigo_o, codigo_d);
+   					imprimir_tablero(estado);
+	   				
             	}
-                break;	
+            	break;
+
+            	case 3:{
+            		list< set<int> > lista_estados;
+
+            		// encuentra en el estado a c/reina y le genera todas las jugadas posibles
+            		set<int>::iterator it= estado.begin();
+            		for (it; it!= estado.end(); it++){
+            			if (*it/100 == 5 || *it/100 == 6 || *it/100 == 7 || *it/100 == 8){		// identifica las reinas Azules
+            				genera_estados_posibles(estado, *it, lista_estados);
+            			}
+					}
+
+            		
+
+            	}
+                break;
+
             default:{
             	    cout <<  endl << "Opción invalida\n" << "Ingrese una nueva opción\n";
             	    //eleccion= -1;
@@ -547,7 +583,7 @@ void jugar(set<int> &estado_actual){
         cin.ignore();
         cin.ignore();
 
-   		imprimir_tablero(estado_actual);
+   		imprimir_tablero(estado);
     	imprimir_submenu();
 
         cin >> eleccion;
@@ -566,10 +602,10 @@ void jugar(set<int> &estado_actual){
 //////////////////////////////////////////////////////////////////////////////////////
 
 int main(){
-	set<int> estado_actual;
+	set<int> estado;
 
 	// define estado inicial: ubicacion de las 4 reinas de cada color
-	estado_actual= {130, 260, 303, 493, 539, 669, 707, 897, 965};
+	estado= {130, 260, 303, 493, 539, 669, 707, 897, 965};
 
 	imprimir_menu();
 	int opcion;
@@ -578,8 +614,8 @@ int main(){
     while (opcion != 0){
         switch (opcion){
             case 1:{						// jugar
-            		imprimir_tablero(estado_actual);
-            		jugar(estado_actual);
+            		imprimir_tablero(estado);
+            		jugar(estado);
             	}
                 break;
 	
