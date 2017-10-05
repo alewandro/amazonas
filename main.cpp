@@ -7,7 +7,21 @@
 
 using namespace std;
 
-/* 
+/*
+///////////////////////////////////////
+PROBLEMAS:
+
+- ENTRA EN LOOP AL INGRESAR VALOR ALFANUMERICO EN SUBMENU JUGAR!!
+
+- FALTA CHEQUEAR QUE LA PIEZA a mover LE PERTENEZCA AL JUGADOR!!
+(que no pueda mover ni las azules ni las x)
+
+- Mejorar disparo de flecha!!
+
+///////////////////////////////////////
+
+
+ 
 TABLERO: 
  tablero de 10 x 10  (la representacion va de 0 a 9)
  para usar costo arco numerico (int costo)
@@ -52,140 +66,7 @@ JUGADA VALIDA: calcula todas las jugadas
 
 
 */
-string devolver_notacion(int set_member){
-	string notacion;
-	int fila= set_member % 10;
-	int columna= ((set_member - fila) % 100)/10;
-	int ficha= (set_member - fila - columna * 10)/100;
 
-	switch (ficha){
-		case 1:{
-			notacion= "R1 ";
-			}
-		break;
-		case 2:{
-			notacion= "R2 ";
-			}
-		break;
-		case 3:{
-			notacion= "R3 ";
-			}
-		break;
-		case 4:{
-			notacion= "R4 ";
-			}
-		break;
-		case 5:{
-			notacion= "A1 ";
-			}
-		break;
-		case 6:{
-			notacion= "A2 ";
-			}
-		break;
-		case 7:{
-			notacion= "A3 ";
-			}
-		break;
-		case 8:{
-			notacion= "A4 ";
-			}
-		break;
-		case 9:{
-			notacion= "X ";
-			}
-		break;
-
-	}
-
-	switch (columna){
-		case 0:{
-			notacion += "A";
-			}
-		break;
-		case 1:{
-			notacion += "B";
-			}
-		break;
-		case 2:{
-			notacion += "C";
-			}
-		break;
-		case 3:{
-			notacion += "D";
-			}
-		break;
-		case 4:{
-			notacion += "E";
-			}
-		break;
-		case 5:{
-			notacion += "F";
-			}
-		break;
-		case 6:{
-			notacion += "G";
-			}
-		break;
-		case 7:{
-			notacion += "H";
-			}
-		break;
-		case 8:{
-			notacion += "I";
-			}
-		break;
-		case 9:{
-			notacion += "J";
-			}
-		break;
-	}
-
-	switch (fila){
-		case 0:{
-			notacion += "1";
-			}
-		break;
-		case 1:{
-			notacion += "2";
-			}
-		break;
-		case 2:{
-			notacion += "3";
-			}
-		break;
-		case 3:{
-			notacion += "4";
-			}
-		break;
-		case 4:{
-			notacion += "5";
-			}
-		break;
-		case 5:{
-			notacion += "6";
-			}
-		break;
-		case 6:{
-			notacion += "7";
-			}
-		break;
-		case 7:{
-			notacion += "8";
-			}
-		break;
-		case 8:{
-			notacion += "9";
-			}
-		break;
-		case 9:{
-			notacion += "10";
-			}
-		break;
-	}
-
-	return notacion;
-}
 
 void imprimir_menu(){
 	cout << string(50, '\n');
@@ -316,6 +197,33 @@ void imprimir_tablero(set<int> &estado_actual){
 
 }
 
+// devuelve en notacion el codigo numerico
+string devolver_notacion(int set_member){
+	string notacion;
+	int fila= set_member % 10;
+	int columna= ((set_member - fila) % 100)/10;
+	int ficha= (set_member - fila - columna * 10)/100;
+
+	string fichas[]= {"", "R1", "R2", "R3", "R4", "A1", "A2", "A3", "A4", "x"};
+	string columnas[]= {"A", "B", "C", "D", "E", "F", "G", "H", "I", "J"};
+	string filas[]= {"1", "2", "3", "4", "5", "6", "7", "8", "9", "10"};
+
+	notacion= fichas[ficha];
+	notacion += columnas[columna];
+	notacion += filas[fila];
+
+	return notacion;
+}
+
+/*
+int devolver_codigo_numerico(string notacion){
+	int codigo_numerico;
+
+
+
+	return codigo_numerico;
+}
+*/
 void imprimir_set(set<int> un_set){
 	set<int>::iterator it= un_set.begin();
 	
@@ -334,11 +242,31 @@ void imprimir_submenu(){
 
 //////////////////////////////////////////////////////////////////
 
+
+
 //////////////////////////////////////////////////////////////////
 
 
 
 
+// devuelve el codigo de la ficha que esta en tal fila, tal columna. 
+// devuelve -1 si no hay nada
+int devolver_codigo_ficha(set<int> &estado, int columna, int fila){
+	int casillero= columna * 10 + fila;
+
+	if (estado.count(casillero + 100)) return 100;		// busca R1
+	if (estado.count(casillero + 200)) return 200;		// busca R2
+	if (estado.count(casillero + 300)) return 300;		// busca R3
+	if (estado.count(casillero + 400)) return 400;		// busca R4
+	if (estado.count(casillero + 500)) return 500;		// busca A1
+	if (estado.count(casillero + 600)) return 600;		// busca A2
+	if (estado.count(casillero + 700)) return 700;		// busca A3
+	if (estado.count(casillero + 800)) return 800;		// busca A4
+	if (estado.count(casillero + 900)) return 900;		// busca X
+	
+	return -1;											// no encontro nada
+
+}
 
 bool casilla_ocupada(set<int> &estado, int columna, int fila){
 	
@@ -359,6 +287,57 @@ bool casilla_ocupada(set<int> &estado, int columna, int fila){
 
 }
 
+void obtener_fila_columna(string &notacion, int &columna, int &fila){
+
+	string columnas[]= {"Aa", "Bb", "Cc", "Dd", "Ee", "Ff", "Gg", "Hh", "Ii", "Jj"};
+	string filas[]= {"1", "2", "3", "4", "5", "6", "7", "8", "9", "10"};
+
+	columna= -1;
+	fila= -1;
+	
+	for (int i=0; i<10; i++){
+		if (columnas[i][0] == notacion[0])
+			columna= i;
+	}
+
+	for (int i=0; i<10; i++){
+		if (columnas[i][1] == notacion[0]){
+			columna= i;
+			notacion[0]= columnas[i][0];
+		}
+	}
+
+	for (int i=0; i<10; i++){
+		if (filas[i].substr(0) == notacion.substr(1))
+			fila= i;
+	}
+
+}
+
+// devuelve el codigo numerico de una pieza en un lugar tipo notacion
+// devuelve -1 si fila o columna estan mal
+// devuelve -2 si la casilla esta vacia
+
+int devolver_codigo(set<int> &estado, string &notacion){		// lo pasa x ref para corregirlo si es minuscula
+	int columna, fila;
+	
+	obtener_fila_columna(notacion, columna, fila);
+	
+	if (columna == -1 || fila == -1)
+		return -1;									// columna o fila incorrectos
+
+	int ficha= devolver_codigo_ficha(estado, columna, fila); 
+	
+	if (ficha == -1)
+		return -2;									// no hay nada en esa posicion 
+	else
+		return ficha + columna * 10 + fila;			// retorna el codigo numerico completo
+	
+
+}
+
+
+// devuelve un set de posiciones validas para una ficha en un lugar(numerico)
 void posiciones_validas(set<int> &estado, int ubicacion, set<int> &pos_validas){
 	// ubicacion es ficha+x+y   (ficha+columna+fila)
 	// 123, 547, etc a las que chequearle las jugadas validas
@@ -431,35 +410,147 @@ void posiciones_validas(set<int> &estado, int ubicacion, set<int> &pos_validas){
 	}
 }
 
+
+// busca el destino en el set de jugadas posibles
+bool destino_valido(set<int> &estado, int codigo_origen, string destino){
+	// string notacion;
+	int codigo_destino, columna, fila, ficha;
+
+	obtener_fila_columna(destino, columna, fila);
+	ficha= devolver_codigo_ficha(estado, (codigo_origen % 100 - codigo_origen % 10)/10, codigo_origen % 10);
+	codigo_destino= ficha + columna * 10 + fila;
+
+	set<int> pos_validas;
+	posiciones_validas(estado, codigo_origen, pos_validas);
+	set<int>::iterator it= pos_validas.begin();
+	
+  	for (it; it!=pos_validas.end(); ++it){
+    	// notacion= devolver_notacion(*it);
+    	if (codigo_destino == *it) return true;
+  	}
+
+  	return false;
+}
+
+
+void mover_ficha(set<int> &estado_actual, int origen, string destino){
+	int columna, fila;
+
+	// elimina del set estado actual el origen
+	// si es flecha no lo va a poder borrar
+	estado_actual.erase(origen);				
+	
+	obtener_fila_columna(destino, columna, fila);
+
+	int ficha= origen - origen % 100;
+
+	estado_actual.insert(ficha + columna * 10 + fila);
+
+}
+
 void jugar(set<int> &estado_actual){
 
    	set<int> pos_validas;
-    imprimir_submenu();
+    
+    imprimir_submenu();  // do, codigo_origen, pos_validas);
+	// set<int>::iterator it= pos_validas.begin()
             		
-	int opcion;
-	cin >> opcion;
+	int eleccion;
+	cin >> eleccion;
 
-    while (opcion != 0){
-        switch (opcion){
+    while (eleccion != 0){
+        switch (eleccion){
             case 1:{						// jugadas posibles
-            		posiciones_validas(estado_actual, 260, pos_validas);
-            		imprimir_set(pos_validas);
-            		cout << endl << "Presione <ENTER> para continuar..";
-			        cin.ignore();
-			        cin.ignore();
+            		cout << "Ingrese Origen (Letra Numero: A10): " << endl;
+            		string origen;
+            		cin >> origen;
+            		int codigo= devolver_codigo(estado_actual, origen);
+            		cout << " el codigo de su notacion es: " << codigo << endl;
+            		if (codigo > -1){
+	            		posiciones_validas(estado_actual, codigo, pos_validas);
+	            		imprimir_set(pos_validas);
+	            	}else{
+	            		cout << "Codigo Incorrecto o no existen fichas en ese lugar ! " << endl;
+	            	}
+
             	}
                 break;
-	
+            case 2:{						// mover ficha
+            		cout << "Ingrese Origen (Letra Numero: A10): ";
+            		string posicion;
+            		int codigo_origen, destino, fil, col, ficha;
+
+            		cin >> posicion;
+            		codigo_origen= devolver_codigo(estado_actual, posicion);
+            		cout << " el codigo de su notacion es: " << codigo_origen << endl;
+            		if (codigo_origen == -1){
+	            		cout << "Codigo Incorrecto o no existen fichas en ese lugar ! " << endl;
+	            		break;
+	            	}
+	            	//
+	            	// FALTA CHEQUEAR QUE SEA UNA PIEZA QUE LE PERTENEZCA AL JUGADOR!!
+
+	            	cout << "Ingrese Destino (Letra Numero: A10): " ;
+
+            		cin >> posicion;
+            		destino= devolver_codigo(estado_actual, posicion);
+            		cout << destino << endl;
+            		if (destino == -1){
+	            		cout << "Fila o Columna Incorrectos! " << endl;
+	            		break;
+	            	}
+	            	
+	            	// posiciones_validas(estado_actual, codigo_origen, pos_validas); // crea set de validas para posicion origen
+	            	// imprimir_set(pos_validas);
+	            	
+	            	// cout << destino_valido(estado_actual, codigo_origen, posicion);
+
+	            	if (destino_valido(estado_actual, codigo_origen, posicion)){
+	            		mover_ficha(estado_actual, codigo_origen, posicion);
+   						imprimir_tablero(estado_actual);
+   						
+   						obtener_fila_columna(posicion, col, fil);
+   						ficha= devolver_codigo_ficha(estado_actual, col, fil);
+   						codigo_origen= ficha + col * 10 + fil; 						//la flecha sale del lugar de la reina
+   						cout << "origen flecha " << posicion << " " << col << fil << endl;
+   						
+   						destino= -1; // setea para el while
+   						while (destino < 0){
+	   						cout << "Ingrese Destino de la Flecha: ";
+	   						cin >> posicion;
+		            		
+		            		destino= devolver_codigo(estado_actual, posicion);
+		            		
+		            		if (destino == -1){
+			            		cout << "Fila o Columna Incorrectos! (-1)" << endl;
+			            		break;
+		            		}else if (destino == -2){
+			            		cout << "destino flecha vacio (-2)--> ok " << endl;
+			            	}
+			            	if (destino_valido(estado_actual, codigo_origen, posicion)){
+				            	codigo_origen= codigo_origen - ficha + 900; 				// transforma en flecha
+			            		mover_ficha(estado_actual, codigo_origen, posicion);
+			            	}
+			            }	
+	            	}
+	            	
+            	}
+                break;	
             default:{
             	    cout <<  endl << "Opción invalida\n" << "Ingrese una nueva opción\n";
+            	    //eleccion= -1;
             	}
-            break;
+            	break;
         	}
-    
+    	
+   		cout << endl << "Presione <ENTER> para continuar..";
+        cin.ignore();
+        cin.ignore();
+
    		imprimir_tablero(estado_actual);
     	imprimir_submenu();
 
-        cin >> opcion;
+        cin >> eleccion;
 	
 
     }
