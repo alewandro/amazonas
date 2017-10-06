@@ -14,8 +14,6 @@ PROBLEMAS:
 - ENTRA EN LOOP AL INGRESAR VALOR ALFANUMERICO EN SUBMENU JUGAR!!
 
 
-- Mejorar disparo de flecha!!
-
 ///////////////////////////////////////
 
 
@@ -60,7 +58,7 @@ entonces:
 ESTADO= SET<int> de valores mismo esquema: ficha+casillero
 		tambien podria ser una lista... ver complejidad
 
-JUGADA VALIDA: calcula todas las jugadas
+JUGADA VALIDA: calcula todas las jugadas posibles
 
 
 */
@@ -99,44 +97,12 @@ void imprimir_menu(){
 	cout << endl;
 	cout << "                           1 - Jugar" << endl;
 	cout << endl;
-	cout << "                           2 - Modificar Heuristica" << endl;
+	cout << "                           2 - Preferencias - Heuristica" << endl;
 	cout << endl;
 	cout << "                           0 - Salir" << endl;
 	cout << string(10, '\n');
 }
 
-/*
-void imprimir_tablero(set<int> &estado){
-	
-	cout << string(50, '\n');
-
-	cout << "        A   B   C   D   E   F   G   H   I   J" << endl;
-	cout << "      o---------------------------------------o" << endl;
-	cout << "   10 |   :   :   :   :   :   :   :   :   :   |" << endl;
-	cout << "      |---------------------------------------|" << endl;
-	cout << "    9 |   :   :   :   :   :   :   :   :   :   |" << endl;
-	cout << "      |---------------------------------------|" << endl;
-	cout << "    8 |   :   :   :   :   :   :   :   :   :   |" << endl;
-	cout << "      |---------------------------------------|" << endl;
-	cout << "    7 |   :   :   :   :   :   :   :   :   :   |" << endl;
-	cout << "      |---------------------------------------|" << endl;
-	cout << "    6 |   :   :   :   :   :   :   :   :   :   |" << endl;
-	cout << "      |---------------------------------------|" << endl;
-	cout << "    5 |   :   :   :   :   :   :   :   :   :   |" << endl;
-	cout << "      |---------------------------------------|" << endl;
-	cout << "    4 |   :   :   :   :   :   :   :   :   :   |" << endl;
-	cout << "      |---------------------------------------|" << endl;
-	cout << "    3 |   :   :   :   :   :   :   :   :   :   |" << endl;
-	cout << "      |---------------------------------------|" << endl;
-	cout << "    2 |   :   :   :   :   :   :   :   :   :   |" << endl;
-	cout << "      |---------------------------------------|" << endl;
-	cout << "    1 |   :   :   :   :   :   :   :   :   :   |" << endl;
-	cout << "      |---------------------------------------|" << endl;
-	cout << "    0 |   :   :   :   :   :   :   :   :   :   |" << endl;
-	cout << "      o---------------------------------------o" << endl;
-
-}
-*/
 
 void imprime_ficha(set<int> &estado_actual, int casillero){
 	int columna= casillero % 10;
@@ -170,9 +136,10 @@ void imprimir_tablero(set<int> &estado_actual){
 	cout << string(50, '\n');
 
 	cout << "        A   B   C   D   E   F   G   H   I   J" << endl;
-	cout << "      o---------------------------------------o" << endl;
+	cout << "       _______________________________________ " << endl;
 
-	string tablero("   10 | v : v : v : v : v : v : v : v : v : v | 10n      |---------------------------------------|n    9 | v : v : v : v : v : v : v : v : v : v | 9n      |---------------------------------------|n    8 | v : v : v : v : v : v : v : v : v : v | 8n      |---------------------------------------|n    7 | v : v : v : v : v : v : v : v : v : v | 7n      |---------------------------------------|n    6 | v : v : v : v : v : v : v : v : v : v | 6n      |---------------------------------------|n    5 | v : v : v : v : v : v : v : v : v : v | 5n      |---------------------------------------|n    4 | v : v : v : v : v : v : v : v : v : v | 4n      |---------------------------------------|n    3 | v : v : v : v : v : v : v : v : v : v | 3n      |---------------------------------------|n    2 | v : v : v : v : v : v : v : v : v : v | 2n      |---------------------------------------|n    1 | v : v : v : v : v : v : v : v : v : v | 1n      o---------------------------------------on        A   B   C   D   E   F   G   H   I   Jn");
+//	string tablero("   10 | v : v : v : v : v : v : v : v : v : v | 10n      |_______________________________________|n    9 | v : v : v : v : v : v : v : v : v : v | 9n      |---------------------------------------|n    8 | v : v : v : v : v : v : v : v : v : v | 8n      |---------------------------------------|n    7 | v : v : v : v : v : v : v : v : v : v | 7n      |---------------------------------------|n    6 | v : v : v : v : v : v : v : v : v : v | 6n      |---------------------------------------|n    5 | v : v : v : v : v : v : v : v : v : v | 5n      |---------------------------------------|n    4 | v : v : v : v : v : v : v : v : v : v | 4n      |---------------------------------------|n    3 | v : v : v : v : v : v : v : v : v : v | 3n      |---------------------------------------|n    2 | v : v : v : v : v : v : v : v : v : v | 2n      |---------------------------------------|n    1 | v : v : v : v : v : v : v : v : v : v | 1n      o---------------------------------------on        A   B   C   D   E   F   G   H   I   Jn");
+	string tablero("   10 | v | v | v | v | v | v | v | v | v | v | 10n      |___|___|___|___|___|___|___|___|___|___|n    9 | v | v | v | v | v | v | v | v | v | v | 9n      |___|___|___|___|___|___|___|___|___|___|n    8 | v | v | v | v | v | v | v | v | v | v | 8n      |___|___|___|___|___|___|___|___|___|___|n    7 | v | v | v | v | v | v | v | v | v | v | 7n      |___|___|___|___|___|___|___|___|___|___|n    6 | v | v | v | v | v | v | v | v | v | v | 6n      |___|___|___|___|___|___|___|___|___|___|n    5 | v | v | v | v | v | v | v | v | v | v | 5n      |___|___|___|___|___|___|___|___|___|___|n    4 | v | v | v | v | v | v | v | v | v | v | 4n      |___|___|___|___|___|___|___|___|___|___|n    3 | v | v | v | v | v | v | v | v | v | v | 3n      |___|___|___|___|___|___|___|___|___|___|n    2 | v | v | v | v | v | v | v | v | v | v | 2n      |___|___|___|___|___|___|___|___|___|___|n    1 | v | v | v | v | v | v | v | v | v | v | 1n      |___|___|___|___|___|___|___|___|___|___|n        A   B   C   D   E   F   G   H   I   Jn");
 
 	for (string::iterator it=tablero.begin(); it!=tablero.end(); ++it){
     	if (*it == 'n')
@@ -603,12 +570,16 @@ void jugar(set<int> &estado){
 
 int main(){
 	set<int> estado;
+	int opcion, profundidad;
+
+	profundidad= 1; 				// por defecto
+	max_reinas_propias=5;
+	min_reinas_Oponente=5;
 
 	// define estado inicial: ubicacion de las 4 reinas de cada color
-	estado= {130, 260, 303, 493, 539, 669, 707, 897, 965};
+	estado= {130, 260, 303, 493, 539, 669, 707, 897};
 
 	imprimir_menu();
-	int opcion;
 	cin >> opcion;
 
     while (opcion != 0){
@@ -618,6 +589,26 @@ int main(){
             		jugar(estado);
             	}
                 break;
+            case 2:{						// jugar
+            		//imprimir_preferencias();
+					cout << string(50, '\n');
+            		cout << " Preferencias" << endl;
+					cout << "o---------------------------------------------------------------------o" << endl;
+            		cout << "| 1 - Ingrese la Cantidad de Niveles de Analisis Deseado   |    " << profundidad << "     |" << endl;
+					cout << "o---------------------------------------------------------------------o" << endl << endl;
+            		cout << " Heuristica" << endl;
+					cout << "o---------------------------------------------------------------------o" << endl;
+            		cout << "| 2 - Maximizar Recorrido Reinas Propias                   |    5     |" << endl;
+            		cout << "| 3 - Minimizar Recorrido Reinas Oponente                  |    3     |" << endl;
+            		cout << "| 4 - Otro 1                                               |    1     |" << endl;
+            		cout << "| 5 - Otro 2                                               |    1     |" << endl;
+					cout << "o---------------------------------------------------------------------o" << endl;
+            		cout << "|                                         Total Heuristica |    10    |" << endl;
+					cout << "o---------------------------------------------------------------------o" << endl << endl;
+            		cout << " Ingrese una Opcion: ";
+            		cin >> profundidad;
+            	}
+                break;    
 	
             default:{
             	    cout <<  endl << "Opción invalida\n" << "Ingrese una nueva opción\n";
