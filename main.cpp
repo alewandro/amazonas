@@ -269,73 +269,111 @@ void genera_estados_posibles(set<int> &estado, int codigo_o, list< set<int> > &l
 			estado_posible.insert(*it_disparo);  			//inserta un disparo en estado
 			lista_estados.push_back(estado_posible);
 			estado_posible.erase(*it_disparo);				//borra el disparo para insertar el q sigue
+			estado_posible.erase(jugada);
 		}
 	}
 
 	cout << "lista de estado_posible: " << lista_estados.size() << endl;
 }
 
-int funcion_heuristica (set<int> estado) {
+int funcion_heuristica (set<int> estado, int jugador) {
     //verifica segun criterios que tan bueno es el estado
-    //por ahora retorna 10
-    return 10;
+    //por ahora retorna un promedio de posiciones validas para las reinas del jugador.
+    set<int> pos_validas;
+    int tamano = 0;
+    set<int>::iterator it= estado.begin();
+    for (it; it!= estado.end(); it++){
+        if (jugador == -1 && (*it/100 == 5 || *it/100 == 6 || *it/100 == 7 || *it/100 == 8)){		// identifica las reinas Azules
+            posiciones_validas(estado, *it, pos_validas);
+                tamano += pos_validas.size();
+        }
+        if (jugador == 1 && (*it/100 == 1 || *it/100 == 2 || *it/100 == 3 || *it/100 == 4)){		// identifica las reinas Rojas
+            posiciones_validas(estado, *it, pos_validas);
+                tamano += pos_validas.size();
+        }
+    }
+
+    tamano = tamano/4;
+
+    return tamano;
 }
 
 
-int NegaMax (set<int> estado, int profundidad, int alpha, int beta, int jugador) {
-    set<int> pos_validas;
+int NegaMax (set<int> &estado, int profundidad, int alpha, int beta, int jugador) {
+    // Hay que hacer que guarde la jugada elegida en un entero y despues generarla para que mueva la ficha.
+    set<int> pos_validas, estado_nuevo;
     list< set<int> > lista_estados;
     int Max, valor;
+/*
+    //imprimir_set(estado);
+    set<int>::iterator iterador= estado.begin();
+    for (iterador; iterador != estado.end(); iterador++)
+        cout << "elemento: " << *iterador;
+    //cout << "ultimo: " << *estado.end() << endl;
+    //cout << "primero: " << *estado.begin() << endl;
+    cin.ignore();
+
+    cout << "alpha: " << alpha << endl;
+    cout << "beta: " << beta << endl;
+    cin.ignore();
+*/
     set<int>::iterator it= estado.begin();
-            		for (it; it!= estado.end(); it++){
-            			cout << *it << endl;
-            			if (jugador == -1 && (*it/100 == 5 || *it/100 == 6 || *it/100 == 7 || *it/100 == 8)){		// identifica las reinas Azules
-            				posiciones_validas(estado, *it, pos_validas);
-                            if (pos_validas.empty() || profundidad == 0)
-                                return funcion_heuristica(estado) * jugador;
-                            else {
-                                Max = -1000;
-                                genera_estados_posibles(estado, *it, lista_estados);
-                                list< set<int> >::iterator it_lista = lista_estados.begin();
-                                for (it_lista; it_lista != lista_estados.end(); it_lista++) {
-                                    //imprimir_tablero(*it_lista);
-                                    //cin.ignore();
-                                    valor = -NegaMax(*it_lista, profundidad - 1, -beta, -alpha, -jugador);
-                                    if (valor > Max)
-                                        Max = valor;
-                                    if (valor > alpha)
-                                        alpha = valor;
-                                    if (alpha >= beta)
-                                        return alpha;
-                                }
+        for (it; it!= estado.end(); it++){
+            //cout << *it << endl;
+            if (jugador == -1 && (*it/100 == 5 || *it/100 == 6 || *it/100 == 7 || *it/100 == 8)){		// identifica las reinas Azules
+            	posiciones_validas(estado, *it, pos_validas);
+                    if (pos_validas.empty() || profundidad == 0)
+                        return funcion_heuristica(estado, jugador) * jugador;
+                    else {
+                        Max = -1000;
+                        genera_estados_posibles(estado, *it, lista_estados);
+                        list< set<int> >::iterator it_lista = lista_estados.begin();
+                        for (it_lista; it_lista != lista_estados.end(); it_lista++) {
+                            //imprimir_tablero(*it_lista);
+                            //cin.ignore();
+                            valor = -NegaMax(*it_lista, profundidad - 1, -beta, -alpha, -jugador);
+                            if (valor > Max)
+                                Max = valor;
+                            if (valor > alpha) {
+                                estado_nuevo = *it_lista;
+                                alpha = valor;}
+                            if (alpha >= beta)
                                 return alpha;
                             }
+                        estado = estado_nuevo;
+                        return alpha;
                         }
-            			else
-                            if (jugador == 1 && (*it/100 == 1 || *it/100 == 2 || *it/100 == 3 || *it/100 == 4)){		// identifica las reinas Rojas
-                                posiciones_validas(estado, *it, pos_validas);
-                                if (pos_validas.empty() || profundidad == 0)
-                                    return funcion_heuristica(estado) * jugador;
-                                else
-                                    {
-                                Max = -1000;
-                                genera_estados_posibles(estado, *it, lista_estados);
-                                list< set<int> >::iterator it_lista = lista_estados.begin();
-                                for (it_lista; it_lista != lista_estados.end(); it_lista++) {
-                                    //imprimir_tablero(*it_lista);
-                                    //cin.ignore();
-                                    valor = -NegaMax(*it_lista, profundidad - 1, -beta, -alpha, -jugador);
-                                    if (valor > Max)
-                                        Max = valor;
-                                    if (valor > alpha)
-                                        alpha = valor;
-                                    if (alpha >= beta)
-                                        return alpha;
-                                    }
+                }
+            else
+                if (jugador == 1 && (*it/100 == 1 || *it/100 == 2 || *it/100 == 3 || *it/100 == 4)){		// identifica las reinas Rojas
+                    posiciones_validas(estado, *it, pos_validas);
+                    if (pos_validas.empty() || profundidad == 0)
+                        return funcion_heuristica(estado, jugador) * jugador;
+                    else
+                    {
+                        Max = -1000;
+                        genera_estados_posibles(estado, *it, lista_estados);
+                        list< set<int> >::iterator it_lista = lista_estados.begin();
+                        for (it_lista; it_lista != lista_estados.end(); it_lista++) {
+                            //imprimir_tablero(*it_lista);
+                            //cin.ignore();
+                            valor = -NegaMax(*it_lista, profundidad - 1, -beta, -alpha, -jugador);
+                            if (valor > Max)
+                                Max = valor;
+                            if (valor > alpha)
+                                alpha = valor;
+                            if (alpha >= beta)
                                 return alpha;
-                                }
                             }
-            		}
+                        return alpha;
+                    }
+                }
+        }
+}
+
+void descompone_jugada(int jugada, int & mov, int & flecha) {
+    mov = jugada % 1000;
+    flecha = (jugada - mov)/1000;
 }
 
 /*
@@ -473,8 +511,14 @@ void jugar(set<int> &estado){
             	break;
 
             	case 3:{
+
+            		//mueve solo con la primer reina azul que encuentra
+            		//encima casi siempre la encierra
+            		//cuando no tiene mas movimientos, empieza a borrar flechas.
+
             		list< set<int> > lista_estados;
-            		int alpha = -1000, beta = 1000, profundidad;
+            		int alpha = -1000, beta = 1000, profundidad, ultima=0;
+            		int movimiento=0, flechazo=0;
 
             		cout << "Ingrese profundidad a examinar: " << endl;
             		cin >> profundidad;
@@ -488,8 +532,23 @@ void jugar(set<int> &estado){
 					}
 
 */
-                    alpha = NegaMax(estado, profundidad, alpha, beta, -1);
-                    cout << alpha << endl;
+                    //set<int>::iterator it= estado.begin();
+            		//for (it; it!= estado.end(); it++){
+                       // cout << *it << endl;
+            			//if (*it/100 == 5 || *it/100 == 6 || *it/100 == 7 || *it/100 == 8) {
+                    ultima = NegaMax(estado, profundidad, alpha, beta, -1);
+                            //if (alpha < ultima)
+                                //ultima = alpha; //se queda con el numero mas chico, no es lo que queremos igual
+                                                //pero se va a quedar con la evaluacion que mas le "convenga".
+                            //alpha = -1000;      //resetea alpha para el prox negamax.
+            			//}
+            		//}
+                    cout << ultima << endl;
+                    set<int>::iterator iterador= estado.end();
+                    iterador--;
+                    descompone_jugada(*iterador, movimiento, flechazo);
+                    cout << "ultimo movimiento: origen-" << movimiento << ". flecha: " << flechazo << endl;
+                    estado.erase(iterador);
 
 
             	}
@@ -533,7 +592,7 @@ int main(){
 	int min_reinas_Oponente=5;
 
 	// define estado inicial: ubicacion de las 4 reinas de cada color
-	estado= {130, 260, 303, 493, 539, 669, 707, 897};
+	estado= {130, 260, 303, 493, 539, 669, 706, 896};
 
 	imprimir_menu();
 	cin >> opcion;
