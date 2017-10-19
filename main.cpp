@@ -67,26 +67,7 @@ JUGADA VALIDA: calcula todas las jugadas posibles
 
 void imprimir_menu(){
 	cout << string(50, '\n');
-
-/*
-    :::     ::::    ::::      :::     :::::::::  ::::::::  ::::    :::     :::      ::::::::
-  :+: :+:   +:+:+: :+:+:+   :+: :+:        :+:  :+:    :+: :+:+:   :+:   :+: :+:   :+:    :+:
- +:+   +:+  +:+ +:+:+ +:+  +:+   +:+      +:+   +:+    +:+ :+:+:+  +:+  +:+   +:+  +:+
-+#++:++#++: +#+  +:+  +#+ +#++:++#++:    +#+    +#+    +:+ +#+ +:+ +#+ +#++:++#++: +#++:++#++
-+#+     +#+ +#+       +#+ +#+     +#+   +#+     +#+    +#+ +#+  +#+#+# +#+     +#+        +#+
-#+#     #+# #+#       #+# #+#     #+#  #+#      #+#    #+# #+#   #+#+# #+#     #+# #+#    #+#
-###     ### ###       ### ###     ### #########  ########  ###    #### ###     ###  ########
-
-
-     /\
-    /  \     _ __ ___     __ _   ____   ___    _ __     __ _   ___
-   / /\ \   | '_ ` _ \   / _` | |_  /  / _ \  | '_ \   / _` | / __|
-  / ____ \  | | | | | | | (_| |  / /  | (_) | | | | | | (_| | \__ \
- /_/    \_\ |_| |_| |_|  \__,_| /___|  \___/  |_| |_|  \__,_| |___/
-*/
-
-
-	cout << "       d8888                                                                    " << endl;
+    cout << "       d8888                                                                    " << endl;
 	cout << "      d88888                                                                    " << endl;
 	cout << "     d88P888                                                                    " << endl;
 	cout << "    d88P 888 88888b.d88b.   8888b.  88888888  .d88b.  88888b.   8888b.  .d8888b " << endl;
@@ -244,7 +225,7 @@ void genera_estados_posibles(set<int> &estado, int codigo_o, list< set<int> > &l
 
 	// calcula posiciones validas de movida para la pieza
 	posiciones_validas(estado, codigo_o, pos_validas);
-	cout << "posiciones_validas para " << codigo_o << " : " << pos_validas.size() << endl;
+	cout << devolver_notacion(codigo_o) << " tiene " << pos_validas.size() << " posiciones validas" <<endl;
 
 	// para c/jugada posible mueve la ficha
 	set<int>::iterator it= pos_validas.begin();
@@ -253,33 +234,35 @@ void genera_estados_posibles(set<int> &estado, int codigo_o, list< set<int> > &l
 		mover_ficha(estado_posible, codigo_o, *it);
 
 		// disparos validos posibles EN ese estado posible
-		codigo= (*it % 100) + 900;									// por ser int, me da el codigo de ficha
-		//codigo= codigo * 100;                               // codigo % 100 + 900;
+		codigo= (*it % 100) + 900;							// por ser int, me da el codigo de ficha
+		//codigo= codigo * 100;                             // codigo % 100 + 900;
 		//codigo = *it - codigo + 900;						// codigo disparo
 		posiciones_validas(estado_posible, codigo, disparos_validos);
-		cout << "disparos validos para posicion " << *it << " --> " << disparos_validos.size() << endl;
+		// cout << "disparos validos para posicion " << *it << " --> " << disparos_validos.size() << endl;
 
 
 		// para c/disparo posible genera un estado y lo agrega a la lista
 		set<int>::iterator it_disparo= disparos_validos.begin();
 		for (it_disparo; it_disparo!=disparos_validos.end(); it_disparo++){
-			jugada = *it_disparo * 1000 + *it;
+			jugada = *it_disparo * 1000 + *it;               // 6 digitos:  9xx5xx  flechaficha
 			//cout << jugada << endl;
-			estado_posible.insert(jugada);
-			estado_posible.insert(*it_disparo);  			//inserta un disparo en estado
-			lista_estados.push_back(estado_posible);
-			estado_posible.erase(*it_disparo);				//borra el disparo para insertar el q sigue
-			estado_posible.erase(jugada);
+			estado_posible.insert(jugada);                   // para no perder la ultima jugada que se hizo 
+			estado_posible.insert(*it_disparo);              // inserta un disparo en estado (la jugada ya estaba cuando movio la ficha)
+			lista_estados.push_back(estado_posible);         // pone el estado al final de la lista
+			estado_posible.erase(*it_disparo);		         // borra el disparo para insertar el q sigue (con la misma jugada)
+			estado_posible.erase(jugada);                    // borra la jugada para insertar la nueva
 		}
 	}
 
-	cout << "lista de estado_posible: " << lista_estados.size() << endl;
+	cout << "lista de estados posibles c/u con sus flechas: " << lista_estados.size() << endl << endl;
 }
 
 int funcion_heuristica (set<int> estado, int jugador) {
     //verifica segun criterios que tan bueno es el estado
     //por ahora retorna un promedio de posiciones validas para las reinas del jugador.
-    set<int> pos_validas;
+/*    set<int> pos_validas;
+  
+
     int tamano = 0;
     set<int>::iterator it= estado.begin();
     for (it; it!= estado.end(); it++){
@@ -293,17 +276,48 @@ int funcion_heuristica (set<int> estado, int jugador) {
         }
     }
 
-    tamano = tamano/4;
 
-    return tamano;
+    return tamano/4;
+*/
+
+
+    set<int> pos_validas;
+    int maximas_rojas= 0; int minimas_rojas= 100;
+    int maximas_azules= 0; int minimas_azules= 100;
+
+    set<int>::iterator it= estado.begin();
+    for (it; it!= estado.end(); it++){
+        if (*it/100 == 5 || *it/100 == 6 || *it/100 == 7 || *it/100 == 8){       // identifica las reinas Azules
+            posiciones_validas(estado, *it, pos_validas);
+                if (pos_validas.size() > maximas_azules) 
+                    maximas_azules= pos_validas.size();
+                
+                if (pos_validas.size() < minimas_azules) 
+                    minimas_azules= pos_validas.size();      
+        }
+
+        if (*it/100 == 1 || *it/100 == 2 || *it/100 == 3 || *it/100 == 4){        // identifica las reinas Rojas
+            posiciones_validas(estado, *it, pos_validas);
+                if (pos_validas.size() > maximas_rojas) 
+                    maximas_rojas= pos_validas.size();
+                
+                if (pos_validas.size() < minimas_rojas) 
+                    minimas_rojas= pos_validas.size(); 
+        }
+    }
+    if (jugador == 1)
+        return maximas_azules - minimas_rojas;
+    else
+        return maximas_rojas - minimas_azules;
 }
 
 
-int NegaMax (set<int> &estado, int profundidad, int alpha, int beta, int jugador) {
+int NegaMax (set<int> estado, int profundidad, int alpha, int beta, int jugador, set<int> &mejor_estado) {
     // Hay que hacer que guarde la jugada elegida en un entero y despues generarla para que mueva la ficha.
-    set<int> pos_validas, estado_nuevo;
+    set<int> pos_validas;
     list< set<int> > lista_estados;
-    int Max, valor;
+    int Max, valor, h;
+    int contador;
 /*
     //imprimir_set(estado);
     set<int>::iterator iterador= estado.begin();
@@ -321,54 +335,71 @@ int NegaMax (set<int> &estado, int profundidad, int alpha, int beta, int jugador
         for (it; it!= estado.end(); it++){
             //cout << *it << endl;
             if (jugador == -1 && (*it/100 == 5 || *it/100 == 6 || *it/100 == 7 || *it/100 == 8)){		// identifica las reinas Azules
-            	posiciones_validas(estado, *it, pos_validas);
-                    if (pos_validas.empty() || profundidad == 0)
-                        return funcion_heuristica(estado, jugador) * jugador;
-                    else {
-                        Max = -1000;
-                        genera_estados_posibles(estado, *it, lista_estados);
-                        list< set<int> >::iterator it_lista = lista_estados.begin();
-                        for (it_lista; it_lista != lista_estados.end(); it_lista++) {
-                            //imprimir_tablero(*it_lista);
-                            //cin.ignore();
-                            valor = -NegaMax(*it_lista, profundidad - 1, -beta, -alpha, -jugador);
-                            if (valor > Max)
-                                Max = valor;
-                            if (valor > alpha) {
-                                estado_nuevo = *it_lista;
-                                alpha = valor;}
-                            if (alpha >= beta)
-                                return alpha;
-                            }
-                        estado = estado_nuevo;
-                        return alpha;
+            	
+                posiciones_validas(estado, *it, pos_validas);
+                
+                if (pos_validas.empty() || profundidad == 0){
+                    h= funcion_heuristica(estado, jugador) * jugador;
+                    cout << "Heuristica= " << h;
+                    return h;
+                }else{
+                    Max = -1000;
+                    genera_estados_posibles(estado, *it, lista_estados);
+                    
+                    list< set<int> >::iterator it_lista = lista_estados.begin();
+                    contador= 0;
+                    for (it_lista; it_lista != lista_estados.end(); it_lista++) {
+                        contador ++; 
+                        //imprimir_tablero(*it_lista);
+                        //cin.ignore();
+                        valor= -NegaMax(*it_lista, profundidad - 1, -beta, -alpha, -jugador, mejor_estado);
+                        if (valor > Max)
+                            Max= valor;
+                        if (valor > alpha) {
+                            mejor_estado = *it_lista;
+                            alpha= valor;
                         }
-                }
-            else
-                if (jugador == 1 && (*it/100 == 1 || *it/100 == 2 || *it/100 == 3 || *it/100 == 4)){		// identifica las reinas Rojas
-                    posiciones_validas(estado, *it, pos_validas);
-                    if (pos_validas.empty() || profundidad == 0)
-                        return funcion_heuristica(estado, jugador) * jugador;
-                    else
-                    {
-                        Max = -1000;
-                        genera_estados_posibles(estado, *it, lista_estados);
-                        list< set<int> >::iterator it_lista = lista_estados.begin();
-                        for (it_lista; it_lista != lista_estados.end(); it_lista++) {
-                            //imprimir_tablero(*it_lista);
-                            //cin.ignore();
-                            valor = -NegaMax(*it_lista, profundidad - 1, -beta, -alpha, -jugador);
-                            if (valor > Max)
-                                Max = valor;
-                            if (valor > alpha)
-                                alpha = valor;
-                            if (alpha >= beta)
-                                return alpha;
-                            }
-                        return alpha;
+                        if (alpha >= beta){
+                            cout << "jugador: " << jugador << " alpha vale: " << alpha << " y el it_lista: " << contador << endl; 
+                            return alpha;       //ojo aca esta devolviendo sin terminar el for... pensarlo bien
+                        }
                     }
+                    // return alpha;
                 }
+
+            }else if (jugador == 1 && (*it/100 == 1 || *it/100 == 2 || *it/100 == 3 || *it/100 == 4)){		// identifica las reinas Rojas
+                posiciones_validas(estado, *it, pos_validas);
+
+                
+                if (pos_validas.empty() || profundidad == 0){
+                    h= funcion_heuristica(estado, jugador) * jugador;
+                    cout << "Heuristica= " << h;
+                    return h;
+                }else{
+                    Max = -1000;
+                    genera_estados_posibles(estado, *it, lista_estados);
+                    contador= 0;
+                    list< set<int> >::iterator it_lista = lista_estados.begin();
+                    for (it_lista; it_lista != lista_estados.end(); it_lista++) {
+                        contador++;
+                        //imprimir_tablero(*it_lista);
+                        //cin.ignore();
+                        valor = -NegaMax(*it_lista, profundidad - 1, -beta, -alpha, -jugador, mejor_estado);
+                        if (valor > Max)
+                            Max = valor;
+                        if (valor > alpha)
+                            alpha = valor;
+                        if (alpha >= beta){
+                            cout << "jugador: " << jugador << " alpha vale: " << alpha << " y el it_lista: " << contador << endl; 
+                            return alpha;
+                        }
+                    }
+                    //return alpha;
+                }
+            }
         }
+        return alpha;
+
 }
 
 void descompone_jugada(int jugada, int & mov, int & flecha) {
@@ -517,6 +548,7 @@ void jugar(set<int> &estado){
             		//cuando no tiene mas movimientos, empieza a borrar flechas.
 
             		list< set<int> > lista_estados;
+                    set<int> mejor_estado;
             		int alpha = -1000, beta = 1000, profundidad, ultima=0;
             		int movimiento=0, flechazo=0;
 
@@ -536,19 +568,30 @@ void jugar(set<int> &estado){
             		//for (it; it!= estado.end(); it++){
                        // cout << *it << endl;
             			//if (*it/100 == 5 || *it/100 == 6 || *it/100 == 7 || *it/100 == 8) {
-                    ultima = NegaMax(estado, profundidad, alpha, beta, -1);
+                    ultima = NegaMax(estado, profundidad, alpha, beta, -1, mejor_estado);
                             //if (alpha < ultima)
                                 //ultima = alpha; //se queda con el numero mas chico, no es lo que queremos igual
                                                 //pero se va a quedar con la evaluacion que mas le "convenga".
                             //alpha = -1000;      //resetea alpha para el prox negamax.
             			//}
             		//}
+                    
                     cout << ultima << endl;
-                    set<int>::iterator iterador= estado.end();
+                    //estado= mejor_estado;
+                    set<int>::iterator iterador= mejor_estado.end();
                     iterador--;
                     descompone_jugada(*iterador, movimiento, flechazo);
-                    cout << "ultimo movimiento: origen-" << movimiento << ". flecha: " << flechazo << endl;
-                    estado.erase(iterador);
+                    mejor_estado.erase(*iterador);
+                    
+                    iterador= estado.begin();
+                    while (*iterador /100 != movimiento /100)    
+                        iterador++;
+
+                    cout << "ficha origen: " << devolver_notacion(*iterador) << endl;
+
+                    estado= mejor_estado;
+                    // descompone_jugada(*iterador, movimiento, flechazo);
+                    cout << "movimiento: " << devolver_notacion(movimiento) << ",  flecha: " << devolver_notacion(flechazo) << endl;
 
 
             	}
@@ -637,58 +680,6 @@ int main(){
 
 
     }
-
-
-/*
-
-	int fichas;			// la cantidad de ficha al inicio
-	int a;	 		// accion: n° de fichas a quitar.  1<= a <=3
-
-	int utilidad; 	// utilidad es igual a la cantidad de fichas de la ultima accion
-
-
-	cout << endl << "Ingrese la cantidad de fichas de la pila: ";
-	cin >> fichas;
-	cout << endl;
-	for (int i= fichas; i>= 0; i--)
-		cout << i << endl;
-	cout << endl;
-
-	// 1)
-	// Generación del árbol de juego (espacio de búsqueda). Se
-	// generarán todos los nodos hasta llegar a un estado terminal.
-
-	// la cantidad de nodos seria sumatoria desde i=0 hasta i=p-1 de a^i
-	Grafo arbol_dejuego( (1-pow(3, fichas)) / (1-3) );
-	cout << "cantidad de nodos: " << arbol_dejuego.devolver_longitud() <<endl;
-
-	/* c/nodo del grafo tiene esta estructura:
-				struct nodo{
-				int estado;
-				int utilidad;
-				std::list<Arco> lista_arcos;
-				};
-	*/
-
-
-//	arma_arbol(arbol_dejuego, fichas);
-
-
-	// 2)
-	// Calcular los valores de la función de evaluación para cada
-	// hoja del árbol.
-
-	// 3)
-	// Calcular el valor de un nodo interior a partir del valor de sus
-	// hijos.
-
-
-	// 4)
-	// Elegir la jugada conveniente a partir de estos valores.
-
-
-
-
 
 	return 0;
 }
