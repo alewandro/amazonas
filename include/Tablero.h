@@ -140,4 +140,48 @@ void mover_ficha(set<int> &estado, int codigo_o, int codigo_d){
 
 }
 
+// devuelve en notacion el codigo numerico
+string devolver_notacion(int set_member){
+	string notacion;
+	int fila= set_member % 10;
+	int columna= ((set_member - fila) % 100)/10;
+	int ficha= (set_member - fila - columna * 10)/100;
+
+	string fichas[]= {"", "R1", "R2", "R3", "R4", "A1", "A2", "A3", "A4", "x"};
+	string columnas[]= {"A", "B", "C", "D", "E", "F", "G", "H", "I", "J"};
+	string filas[]= {"1", "2", "3", "4", "5", "6", "7", "8", "9", "10"};
+
+	notacion= fichas[ficha];
+	notacion += columnas[columna];
+	notacion += filas[fila];
+
+	return notacion;
+}
+
+void obtener_fila_columna(string &notacion, int &columna, int &fila){
+
+	string columnas[]= {"Aa", "Bb", "Cc", "Dd", "Ee", "Ff", "Gg", "Hh", "Ii", "Jj"};
+	string filas[]= {"1", "2", "3", "4", "5", "6", "7", "8", "9", "10"};
+
+	columna= -1;
+	fila= -1;
+
+	for (int i=0; i<10; i++){
+		if (columnas[i][0] == notacion[0])
+			columna= i;
+	}
+
+	for (int i=0; i<10; i++){
+		if (columnas[i][1] == notacion[0]){
+			columna= i;
+			notacion[0]= columnas[i][0];
+		}
+	}
+
+	for (int i=0; i<10; i++){
+		if (filas[i].substr(0) == notacion.substr(1))
+			fila= i;
+	}
+
+}
 #endif // TABLERO_H_INCLUDED
