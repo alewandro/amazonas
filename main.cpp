@@ -13,6 +13,18 @@
 using namespace std;
 
 /*
+
+informe:  
+
+2 sugerencias de federico:
+
+
+jugar azar 10 veces contra cada heuristica h1 h2 h3 a distintos niveles (2, 3, 4)
+y hecer una tabla
+
+armar estados diseñados para ver que hace cada heuristica en ese estado a ver si juega como pretendemos
+
+
 ///////////////////////////////////////
 PROBLEMAS:
 
@@ -182,7 +194,7 @@ void genera_estados_posibles(set<int> &estado, int codigo_o, list< set<int> > &l
 
 	// calcula posiciones validas de movida para la pieza
 	posiciones_validas(estado, codigo_o, pos_validas);
-	cout << devolver_notacion(codigo_o) << " tiene " << pos_validas.size() << " posiciones validas" <<endl;
+	//cout << devolver_notacion(codigo_o) << " tiene " << pos_validas.size() << " posiciones validas" <<endl;
 
 	// para c/jugada posible mueve la ficha
 	set<int>::iterator it= pos_validas.begin();
@@ -211,7 +223,7 @@ void genera_estados_posibles(set<int> &estado, int codigo_o, list< set<int> > &l
 		}
 	}
 
-	cout << "lista de estados posibles c/u con sus flechas: " << lista_estados.size() << endl << endl;
+	// cout << "lista de estados posibles c/u con sus flechas: " << lista_estados.size() << endl << endl;
 }
 
 int funcion_heuristica (set<int> estado, int jugador, int heuristica) {
@@ -340,15 +352,14 @@ int NegaMax (set<int> estado, int profundidad, int alpha, int beta, int jugador,
 
                 posiciones_validas(estado, *it, pos_validas);
 /*
-                if (pos_validas.empty() || profundidad == 0){//ficha atrapada
+                if (pos_validas.empty() || profundidad == 0){                         //ficha atrapada
                     h= funcion_heuristica(estado, jugador, heuristica) * jugador;
                     // cout << "Heuristica= " << h;
                     return h;
                 }
                 */
-                if (profundidad == 0){//ficha atrapada
+                if (profundidad == 0){                                                  //ficha atrapada
                     h= funcion_heuristica(estado, jugador, heuristica) * jugador;
-                    // cout << "Heuristica= " << h;
                     return h;
                 }
                 else if (!pos_validas.empty()) {
@@ -369,9 +380,9 @@ int NegaMax (set<int> estado, int profundidad, int alpha, int beta, int jugador,
                             alpha= valor;
                         }
                         if (alpha >= beta){
-                            cout << "jugador: " << jugador << " alpha vale: " << alpha << " y el it_lista: " << contador << endl;
-                            return alpha;       //ojo aca esta devolviendo sin terminar el for... pensarlo bien
+                            return alpha;       
                         }
+                        //cout << "jugador: " << jugador << " alpha vale: " << alpha << " y el it_lista: " << contador << endl;
                     }
                     // return alpha;
                 }
@@ -407,9 +418,9 @@ int NegaMax (set<int> estado, int profundidad, int alpha, int beta, int jugador,
                             alpha = valor;
                         }
                         if (alpha >= beta){
-                            cout << "jugador: " << jugador << " alpha vale: " << alpha << " y el it_lista: " << contador << endl;
                             return alpha;
                         }
+                        //cout << "jugador: " << jugador << " alpha vale: " << alpha << " y el it_lista: " << contador << endl;
                     }
                     //return alpha;
                 }
@@ -587,7 +598,7 @@ void juega_cpu(set<int> &estado, int jugador, int profundidad, int heuristica){
     //cout << "primero: " << *estado.begin() << endl;
     cin.ignore();
 */
-    cout << "ultima: " << ultima << endl;
+    //cout << "ultima: " << ultima << endl;
     //estado= mejor_estado;
     set<int>::iterator iterador= mejor_estado.end();
     iterador--;
@@ -598,12 +609,12 @@ void juega_cpu(set<int> &estado, int jugador, int profundidad, int heuristica){
     while (*iterador /100 != movimiento /100)
         iterador++;
 
-    cout << "ficha origen: " << devolver_notacion(*iterador) << endl;
+    //cout << "ficha origen: " << devolver_notacion(*iterador) << endl;
 
     estado= mejor_estado;
     imprimir_tablero(estado);
 
-    cout << "movimiento: " << devolver_notacion(movimiento) << ",  flecha: " << devolver_notacion(flechazo) << endl;
+    //cout << "movimiento: " << devolver_notacion(movimiento) << ",  flecha: " << devolver_notacion(flechazo) << endl;
 
 
 }
@@ -613,10 +624,14 @@ void administra_juego(set<int> &estado, int rojas, int azules, int profundidad_r
     // esta funcion alterna los jugadores
     // primero juegan las ROJAS y despues juegan las AZULES
 
+    // define estado inicial: ubicacion de las 4 reinas de cada color
+    estado= {130, 260, 303, 493, 539, 669, 706, 896};
+    // estado = {100, 260, 302, 448, 503, 669, 706, 896, 901, 910, 911, 912, 913, 916, 918, 921, 924, 928, 940, 944, 951, 952};
+
     set<int> pos_validas;
     bool gano_rojo= false;
     bool gano_azul= false;
-    int posibles;
+    int posibles_azul, posibles_rojas;
 
     while (!gano_rojo && !gano_azul){
         imprimir_tablero(estado);
@@ -624,55 +639,67 @@ void administra_juego(set<int> &estado, int rojas, int azules, int profundidad_r
         if (rojas == 1)                             // juega humano
             juega_humano(estado, 1);                // 1= rojas
         else{
-            cout << "entra a jugar cpu rojas..." << endl;
+            // cout << "entra a jugar cpu rojas..." << endl;
             juega_cpu(estado, 1, profundidad_rojas, heuristica_rojas);
         }
 
         // evalua si gano rojo viendo si al azul le quedan movidas
-        posibles= 0;
+        posibles_azul= 0;
+        posibles_rojas= 0;
         set<int>::iterator it= estado.begin();
         for (it; it!= estado.end(); it++){
             if (*it/100 == 5 || *it/100 == 6 || *it/100 == 7 || *it/100 == 8){       // identifica las reinas Azules
                 posiciones_validas(estado, *it, pos_validas);
-                posibles= posibles + pos_validas.size();
+                posibles_azul += pos_validas.size();
                 // cout << "azul tiene " << posibles << " posibles jugadas" << endl;
             }
-        }
-
-        if (posibles == 0)
-            gano_rojo= true;
-        //cout << gano_rojo << gano_azul << endl;
-
-
-
-        // ahora juegan las AZULES
-
-        if (azules == 1)                            // juega humano
-            juega_humano(estado, -1);               // -1= azules
-        else{
-            // si las rojas tambien era cpu hace una pausa!!
-            //if (rojas != 1)
-            cin.ignore();
-            //    sleep_for(nanoseconds(1000));
-
-            cout << "entra a jugar cpu Azules..." << endl;
-            juega_cpu(estado, -1, profundidad_azules, heuristica_azules);
-        }
-
-        // evalua si gano Azul viendo si al rojo le quedan movidas
-        posibles= 0;
-        it= estado.begin();
-        for (it; it!= estado.end(); it++){
-            if (*it/100 == 1 || *it/100 == 2 || *it/100 == 3 || *it/100 == 4){       // identifica las reinas Azules
+            // evalua si el rojo no quedo encerrado
+            if (*it/100 == 1 || *it/100 == 2 || *it/100 == 3 || *it/100 == 4){       // identifica las reinas Rojas
                 posiciones_validas(estado, *it, pos_validas);
-                posibles= posibles + pos_validas.size();
-                // cout << "rojo tiene " << posibles << " posibles jugadas" << endl;
+                posibles_rojas += pos_validas.size();
             }
         }
 
-        if (posibles == 0)
-            gano_azul= true;
+        if (posibles_azul == 0)
+            gano_rojo= true;
+    
+        if (posibles_rojas == 0)                        // porque se pudo haber encerrado solo el rojo
+            gano_azul= true;        
 
+        // ahora juegan las AZULES
+        if (!gano_rojo && !gano_azul){
+            if (azules == 1)                            // juega humano
+                juega_humano(estado, -1);               // -1= azules
+            else{
+                // si las rojas tambien era cpu hace una pausa!!
+                // cin.ignore();
+
+                // cout << "entra a jugar cpu Azules..." << endl;
+                juega_cpu(estado, -1, profundidad_azules, heuristica_azules);
+            }
+
+            // evalua si gano Azul viendo si al rojo le quedan movidas
+            posibles_rojas= 0;
+            posibles_azul= 0;
+            it= estado.begin();
+            for (it; it!= estado.end(); it++){
+                if (*it/100 == 1 || *it/100 == 2 || *it/100 == 3 || *it/100 == 4){       // identifica las reinas Rojas
+                    posiciones_validas(estado, *it, pos_validas);
+                    posibles_rojas= posibles_rojas + pos_validas.size();
+                    // cout << "rojo tiene " << posibles << " posibles jugadas" << endl;
+                }
+                if (*it/100 == 5 || *it/100 == 6 || *it/100 == 7 || *it/100 == 8){       // identifica las reinas Azules
+                    posiciones_validas(estado, *it, pos_validas);
+                    posibles_azul += pos_validas.size();
+                }
+            }
+
+            if (posibles_rojas == 0)
+                gano_azul= true;
+            
+            if (posibles_azul == 0)                     //  evalua esto porque se pudo haber encerrado solo
+                gano_rojo= true;
+        }       
     }       // cierra while
 
     if (gano_azul){
@@ -686,8 +713,11 @@ void administra_juego(set<int> &estado, int rojas, int azules, int profundidad_r
             }
         }
         cout << " con un puntaje de: " << puntaje << endl;
+        cin.ignore();
+        cin.ignore();
+
     }
-    else{
+    else if (gano_rojo){
         cout << "GANADOR: jugador Rojo";
         int puntaje=0;
         set<int>::iterator it = estado.begin();
@@ -698,208 +728,15 @@ void administra_juego(set<int> &estado, int rojas, int azules, int profundidad_r
             }
         }
         cout << " con un puntaje de: " << puntaje << endl;
+        cin.ignore();
+        cin.ignore();
     }
 
 }
 
-
-
-
-/*
-
-void jugar(set<int> &estado){
-
-	int eleccion, fila_o, columna_o, ficha_o, fila_d, columna_d, ficha_d, codigo_o, codigo_d;		// x, y, ficha y codigo  origen / destino
-	string origen, destino;
-   	set<int> pos_validas;
-
-    imprimir_submenu();
-
-	cin >> eleccion;
-
-    while (eleccion != 0){
-        switch (eleccion){
-            case 1:{						// jugadas posibles
-            		cout << "Ingrese Origen: ";
-            		cin >> origen;
-
-            		obtener_fila_columna(origen, columna_o, fila_o);
-            		if (columna_o == -1 || fila_o == -1){
-            			cout << "Fila o Columna Incorrecta" << endl;
-            			break;
-            		}
-
-            		ficha_o= obtener_codigo_ficha(estado, columna_o, fila_o);
-            		if (!ficha_o || ficha_o == 900){
-            			cout << "No hay fichas suyas para mover en ese casillero" << endl;
-            			break;
-            		}
-
-            		codigo_o= ficha_o + columna_o * 10 + fila_o;
-					posiciones_validas(estado, codigo_o, pos_validas);
-	            	imprimir_set(pos_validas);
-
-            	}
-                break;
-            case 2:{						// mover ficha
-
-            		cout << "Ingrese Origen: ";
-            		cin >> origen;
-
-            		obtener_fila_columna(origen, columna_o, fila_o);
-            		if (columna_o == -1 || fila_o == -1){
-            			cout << "Fila o Columna Incorrecta" << endl;
-            			break;
-            		}
-
-            		ficha_o= obtener_codigo_ficha(estado, columna_o, fila_o);
-            		if (!ficha_o || ficha_o == 900 || ficha_o == 500 ||
-            			ficha_o == 600 || ficha_o == 700 || ficha_o == 800){
-            			cout << "No hay fichas suyas para mover en ese casillero" << endl;
-            			break;
-            		}
-
-            		codigo_o= ficha_o + columna_o * 10 + fila_o;
-
-            		// idem para el destino
-            		cout << "Ingrese Destino: ";
-            		cin >> destino;
-
-            		obtener_fila_columna(destino, columna_d, fila_d);
-            		if (columna_d == -1 || fila_d == -1){
-            			cout << "Fila o Columna Incorrecta" << endl;
-            			break;
-            		}
-
-            		ficha_d= obtener_codigo_ficha(estado, columna_d, fila_d);
-            		if (ficha_d){
-            			cout << "Casilla Ocupada!" << endl;
-            			break;
-            		}
-
-            		ficha_d= ficha_o;								// es la misma ficha que va a otro lado
-            		codigo_d= ficha_d + columna_d * 10 + fila_d;
-
-            		if (destino_valido(estado, codigo_o, codigo_d)){
-	            		mover_ficha(estado, codigo_o, codigo_d);
-	   					imprimir_tablero(estado);
-	   				}else{
-	   					cout << "Destino Inalcanzable !!";
-	   					break;
-	   				}
-
-   					// flecha
-
-	   				codigo_o= codigo_d;								// la flecha sale de la reina anterior
-   					ficha_d= 1; 									// para la condicion del while
-
-	   				while (columna_d == -1 || fila_d == -1 || ficha_d || !destino_valido(estado, codigo_o, codigo_d)){
-	            		cout << "Ingrese Destino de la Flecha: ";
-	            		cin >> destino;
-
-	            		obtener_fila_columna(destino, columna_d, fila_d);
-	            		if (columna_d == -1 || fila_d == -1){
-	            			cout << "Fila o Columna Incorrecta" << endl;
-	            		}
-
-	            		ficha_d= obtener_codigo_ficha(estado, columna_d, fila_d);			// chequea si esta vacia!
-	            		if (ficha_d){
-	            			cout << "Casilla Ocupada!" << endl;
-	            		}
-	            		codigo_d= ficha_o + columna_d * 10 + fila_d;
-
-	               		if (!destino_valido(estado, codigo_o, codigo_d)){
-	            			cout << "Destino Inalcanzable !!" << endl;
-	            		}
-
-
-	            	}
-
-            		ficha_d = 900;
-            		codigo_d= ficha_d + columna_d * 10 + fila_d;
-   					codigo_o= codigo_o - ficha_o + ficha_d;								// el origen de la flecha es el destino de la reina anterior
-            		mover_ficha(estado, codigo_o, codigo_d);
-   					imprimir_tablero(estado);
-
-            	}
-            	break;
-
-            	case 3:{
-
-            		//mueve solo con la primer reina azul que encuentra
-            		//encima casi siempre la encierra
-            		//cuando no tiene mas movimientos, empieza a borrar flechas.
-
-            		list< set<int> > lista_estados;
-                    set<int> mejor_estado;
-            		int alpha = -1000, beta = 1000, profundidad, ultima=0;
-            		int movimiento=0, flechazo=0;
-
-            		cout << "Ingrese profundidad a examinar: " << endl;
-            		cin >> profundidad;
-
-                    ultima = NegaMax(estado, profundidad, alpha, beta, -1, mejor_estado);
-                            //if (alpha < ultima)
-                                //ultima = alpha; //se queda con el numero mas chico, no es lo que queremos igual
-                                                //pero se va a quedar con la evaluacion que mas le "convenga".
-                            //alpha = -1000;      //resetea alpha para el prox negamax.
-            			//}
-            		//}
-
-                    cout << ultima << endl;
-                    //estado= mejor_estado;
-                    set<int>::iterator iterador= mejor_estado.end();
-                    iterador--;
-                    descompone_jugada(*iterador, movimiento, flechazo);
-                    mejor_estado.erase(*iterador);
-
-                    iterador= estado.begin();
-                    while (*iterador /100 != movimiento /100)
-                        iterador++;
-
-                    cout << "ficha origen: " << devolver_notacion(*iterador) << endl;
-
-                    estado= mejor_estado;
-                    // descompone_jugada(*iterador, movimiento, flechazo);
-                    cout << "movimiento: " << devolver_notacion(movimiento) << ",  flecha: " << devolver_notacion(flechazo) << endl;
-
-
-            	}
-                break;
-
-            default:{
-            	    cout <<  endl << "Opci�n invalida\n" << "Ingrese una nueva opci�n\n";
-            	    //eleccion= -1;
-            	}
-            	break;
-        	}
-
-   		cout << endl << "Presione <ENTER> para continuar..";
-        cin.ignore();
-        cin.ignore();
-
-   		imprimir_tablero(estado);
-    	imprimir_submenu();
-
-        cin >> eleccion;
-
-    }
-
-}
-*/
 
 void configurar_cpu(int &profundidad, int &heuristica ){
 
-    cout << "o-------------o" << endl;
-    cout << "| Profundidad |" << endl;
-    cout << "o-------------o" << endl;
-    cout << " Ingrese el Nivel de Analisis Deseado                                   " << endl;
-    cout << " 1, 2,..., 10 (max. recomendado = 3)                                    " << endl;
-    //cout << "o------------------------------------------------------------------------o" << endl;
-    cout << " Ingrese su opcion: ";
-    cin >> profundidad;
-    cout << endl;
-    cout << endl;
     cout << "o------------o" << endl;
     cout << "| Heuristica |" << endl;
     cout << "o------------o" << endl;
@@ -907,11 +744,20 @@ void configurar_cpu(int &profundidad, int &heuristica ){
     cout << " 2 - Maximizar Promedio de Casillas Libres                           " << endl;
     cout << " 3 - Maximizar la Diferencia de Casilleros Accesibles                " << endl;
     cout << " 4 - Premia Encerrar Piezas Enemigas                                 " << endl;
-    //cout << "o---------------------------------------------------------------------o" << endl;
     cout << endl;
     cout << " Ingrese su opcion: ";
     cin >> heuristica;
     cout << endl;
+    cout << endl;
+    cout << "o-------------o" << endl;
+    cout << "| Profundidad |" << endl;
+    cout << "o-------------o" << endl;
+    cout << " Ingrese el Nivel de Analisis Deseado (1 a 10) " << endl;
+    cout << endl;
+    cout << " Ingrese su opcion: ";
+    cin >> profundidad;
+    cout << endl;
+    
 }
 
 
@@ -923,9 +769,6 @@ int main(){
     srand(time(NULL));      //genera semilla para numeros aleatorios a partir de la hora del sistema
 	set<int> estado;
 	int rojas, azules, opcion, profundidad_azules, profundidad_rojas, heuristica_azules, heuristica_rojas;
-
-	//estado= {130, 260, 303, 493, 539, 669, 706, 896};      // define estado inicial: ubicacion de las 4 reinas de cada color
-    estado = {100, 260, 302, 448, 503, 669, 706, 896, 901, 910, 911, 912, 913, 916, 918, 921, 924, 928, 940, 944, 951, 952};
 
     rojas= 1000000;                                        // para asegurar pase x preferencias antes de jugar
 
@@ -950,8 +793,7 @@ int main(){
                     // jugar(estado);
             	}
                 break;
-            case 2:{						// jugar
-            		//imprimir_preferencias();
+            case 2:{						              
 					rojas= 0;
                     azules= 0;
                     cout << string(50, '\n');
@@ -997,7 +839,7 @@ int main(){
                 break;
 
             default:{
-            	    cout <<  endl << "Opci�n invalida\n" << "Ingrese una nueva opci�n\n";
+            	    cout <<  endl << "Opcion invalida\n" << "Ingrese una nueva opcion\n";
             	}
             break;
         	}
