@@ -5,81 +5,11 @@
 #include <math.h>
 #include <stdlib.h>     // para numeros aleatorios
 #include <time.h>       // para numeros aleatorios
-//#include <chrono>
-//#include <thread>
 
-//using namespace std::this_thread; // sleep_for, sleep_until
-//using namespace std::chrono; // nanoseconds, system_clock, seconds
 using namespace std;
 
 /*
-
-informe:  
-
-2 sugerencias de federico:
-
-
-jugar azar 10 veces contra cada heuristica h1 h2 h3 a distintos niveles (2, 3, 4)
-y hecer una tabla
-
-armar estados diseñados para ver que hace cada heuristica en ese estado a ver si juega como pretendemos
-
-
-///////////////////////////////////////
-PROBLEMAS:
-
-- ENTRA EN LOOP AL INGRESAR VALOR ALFANUMERICO EN SUBMENU JUGAR!!
-
-
-///////////////////////////////////////
-
-
-
-TABLERO:
- tablero de 10 x 10  (la representacion va de 0 a 9)
- para usar costo arco numerico (int costo)
- paso todo a numeros
-
- (A B C D E F G H I J) no se usan letras, solo numeros
-  0 1 2 3 4 5 6 7 8 9
-9       A1    A2
-8
-7
-6 A3                A4
-5
-4
-3 R3                R4
-2
-1
-0       R1    R2
-  0 1 2 3 4 5 6 7 8 9
- (A B C D E F G H I J)
-
-los codigos de las fichas serian:
-R1 = 100		A1 = 500
-R2 = 200		A2 = 600
-R3 = 300		A3 = 700
-R4 = 400		A4 = 800
-
-x = 900
-
-JUGADA:  ficha+casillero_destino(x,y)
-por ejemplo: 108  seria reina roja N�1 va a casilla 0,8
-por ejemplo: 934  seria flecha en casilla 3,4 --> (columna 3, fila 4)
-
-entonces:
-934 mod 10 --> y= 4
-(934 mod 100)/10 --> x=3
-934/100 --> ficha= 9
-
-ESTADO= SET<int> de valores mismo esquema: ficha+casillero
-		tambien podria ser una lista... ver complejidad
-
-JUGADA VALIDA: calcula todas las jugadas posibles
-
-
 */
-
 
 void imprimir_menu(){
 	cout << string(50, '\n');
@@ -169,20 +99,8 @@ void imprimir_set(set<int> un_set){
   	cout << endl;
 }
 
-void imprimir_submenu(){
-	cout << "  0 - salir" << endl;
-	cout << "  1 - ver jugadas posibles" << endl;
-	cout << "  2 - mover pieza" << endl;
-	cout << "  3 - mueve NegaMax" << endl;
-}
-
 
 //////////////////////////////////////////////////////////////////
-
-
-
-//////////////////////////////////////////////////////////////////
-
 
 
 void genera_estados_posibles(set<int> &estado, int codigo_o, list< set<int> > &lista_estados){
@@ -255,36 +173,23 @@ int funcion_heuristica (set<int> estado, int jugador, int heuristica) {
         }
         break;
         case 3:{
+                
                 // maximiza la diferencia de casilleros accesibles vs las del oponente
                 int maximas_rojas= 0;
-                int minimas_rojas= 100;
                 int maximas_azules= 0;
-                int minimas_azules= 100;
-
                 set<int>::iterator it= estado.begin();
                 for (it; it!= estado.end(); it++){
                     if (*it/100 == 5 || *it/100 == 6 || *it/100 == 7 || *it/100 == 8){       // identifica las reinas Azules
                         posiciones_validas(estado, *it, pos_validas);
-                            if (pos_validas.size() > maximas_azules)
-                                maximas_azules= pos_validas.size();
-
-                            if (pos_validas.size() < minimas_azules)
-                                minimas_azules= pos_validas.size();
+                        maximas_azules += pos_validas.size();
                     }
-
                     if (*it/100 == 1 || *it/100 == 2 || *it/100 == 3 || *it/100 == 4){        // identifica las reinas Rojas
                         posiciones_validas(estado, *it, pos_validas);
-                            if (pos_validas.size() > maximas_rojas)
-                                maximas_rojas= pos_validas.size();
-
-                            if (pos_validas.size() < minimas_rojas)
-                                minimas_rojas= pos_validas.size();
+                        maximas_rojas += pos_validas.size();
                     }
                 }
-                if (jugador == -1)
-                    return maximas_azules - minimas_rojas;
-                else
-                    return maximas_rojas - minimas_azules;
+                
+                return (maximas_rojas - maximas_azules) * jugador;                             // jugador es 1 para rojas o -1 para azules
 
         }
         break;
@@ -358,7 +263,7 @@ int NegaMax (set<int> estado, int profundidad, int alpha, int beta, int jugador,
                     return h;
                 }
                 */
-                if (profundidad == 0){                                                  //ficha atrapada
+                if (profundidad == 0){                                                  
                     h= funcion_heuristica(estado, jugador, heuristica) * jugador;
                     return h;
                 }
@@ -422,10 +327,10 @@ int NegaMax (set<int> estado, int profundidad, int alpha, int beta, int jugador,
                         }
                         //cout << "jugador: " << jugador << " alpha vale: " << alpha << " y el it_lista: " << contador << endl;
                     }
-                    //return alpha;
+                    
                 }
             }
-        }
+        }           // cierra el for
         return alpha;
 
 }
@@ -438,19 +343,19 @@ void descompone_jugada(int jugada, int & mov, int & flecha) {
 /*
 int NegaMax (Tablero T, int depth, int alpha, int beta, jugador j):
 Si T es un tablero de juego finalizado o depth es igual a cero
-Devolver evaluaci�n_heuristica(T) * valor_jugador(J)
+    Devolver evaluaci�n_heuristica(T) * valor_jugador(J)
 Sino
-Inicializar max en -infinito.
-Para cada jugada v�lida V del jugador J en el tablero T
-Generar el tablero T' resultante al realizar V
-Asignar valor =-NegaMax(T', depth-1, -beta, -alpha, J.adversario())
-Si valor > max
-Asignar max = valor
-Si valor > alpha
-Asignar alpha = valor
-Si alpha >= beta
-Devolver alpha
-Devolver alpha
+    Inicializar max en -infinito.
+    Para cada jugada v�lida V del jugador J en el tablero T
+        Generar el tablero T' resultante al realizar V
+        Asignar valor =-NegaMax(T', depth-1, -beta, -alpha, J.adversario())
+        Si valor > max
+            Asignar max = valor
+        Si valor > alpha
+            Asignar alpha = valor
+        Si alpha >= beta
+            Devolver alpha
+    Devolver alpha
 */
 
 void juega_humano(set<int> &estado, int jugador){
@@ -625,7 +530,8 @@ void administra_juego(set<int> &estado, int rojas, int azules, int profundidad_r
     // primero juegan las ROJAS y despues juegan las AZULES
 
     // define estado inicial: ubicacion de las 4 reinas de cada color
-    estado= {130, 260, 303, 493, 539, 669, 706, 896};
+    //estado= {130, 260, 303, 493, 539, 669, 706, 896};
+    estado = {100, 260, 303, 493, 539, 661, 706, 896, 910, 911};
     // estado = {100, 260, 302, 448, 503, 669, 706, 896, 901, 910, 911, 912, 913, 916, 918, 921, 924, 928, 940, 944, 951, 952};
 
     set<int> pos_validas;
@@ -797,12 +703,12 @@ int main(){
 					rojas= 0;
                     azules= 0;
                     cout << string(50, '\n');
-                    cout << "o--------------o" << endl;
-                    cout << "| Preferencias |" << endl;
-                    cout << "o--------------o" << endl << endl;
+                    //cout << "o--------------o" << endl;
+                    cout << " Preferencias " << endl;
+                    //cout << "o--------------o" << endl << endl;
 
-                    cout << endl << endl << " Modo Jugador ROJO:" << endl << " 1- Humano" << endl <<" 2- Computadora" << endl;
-                    cout << " Ingrese una Opcion: ";
+                    cout << "_______________________________________" << endl << endl << " Modo Jugador ROJO" << endl << "_______________________________________" << endl << " 1- Humano" << endl <<" 2- Computadora" << endl;
+                    cout << endl << " Ingrese una Opcion: ";
                     while ((rojas != 1) && (rojas != 2) )
                         cin >> rojas;
                     if (rojas == 2){
@@ -810,9 +716,9 @@ int main(){
                         configurar_cpu(profundidad_rojas, heuristica_rojas);
                     }
 
-                    cout << "___________________________________________________________________" << endl << endl;
-                    cout << endl << endl << " Modo Jugador AZUL:" << endl << " 1- Humano" << endl <<" 2- Computadora" << endl;
-                    cout << " Ingrese una Opcion: ";
+                    cout  << endl << endl;
+                    cout << "_______________________________________" << endl << endl << " Modo Jugador AZUL" << endl << "_______________________________________" << endl << " 1- Humano" << endl <<" 2- Computadora" << endl;
+                    cout << endl << " Ingrese una Opcion: ";
                     while ((azules != 1) && (azules!= 2))
                         cin >> azules;
                     if (azules == 2){
