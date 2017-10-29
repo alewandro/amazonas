@@ -185,3 +185,4 @@ void obtener_fila_columna(string &notacion, int &columna, int &fila){
 
 }
 #endif // TABLERO_H_INCLUDED
+
