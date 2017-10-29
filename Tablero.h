@@ -1,6 +1,7 @@
 #ifndef TABLERO_H_INCLUDED
 #define TABLERO_H_INCLUDED
 #include <set>
+#include <string>
 
 using namespace std;
 

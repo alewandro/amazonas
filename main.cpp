@@ -146,7 +146,6 @@ void genera_estados_posibles(set<int> &estado, int codigo_o, list< set<int> > &l
 
 int funcion_heuristica (set<int> estado, int jugador, int heuristica) {
     //verifica segun criterios que tan bueno es el estado
-    //por ahora retorna un promedio de posiciones validas para las reinas del jugador.
     set<int> pos_validas;
 
     switch (heuristica){
@@ -157,6 +156,7 @@ int funcion_heuristica (set<int> estado, int jugador, int heuristica) {
         }
         break;
         case 2:{
+                // retorna un promedio de posiciones validas para las reinas del jugador.
                 int tamano = 0;
                 set<int>::iterator it= estado.begin();
                 for (it; it!= estado.end(); it++){
@@ -174,7 +174,7 @@ int funcion_heuristica (set<int> estado, int jugador, int heuristica) {
         break;
         case 3:{
                 
-                // maximiza la diferencia de casilleros accesibles vs las del oponente
+                // retorna la diferencia de casilleros accesibles vs las del oponente
                 int maximas_rojas= 0;
                 int maximas_azules= 0;
                 set<int>::iterator it= estado.begin();
@@ -194,19 +194,14 @@ int funcion_heuristica (set<int> estado, int jugador, int heuristica) {
         }
         break;
         case 4: {
+            // retorna un valor maximo cuando a alguna reina enemiga le quedan pocas casillas de movimientos
             int minimo = 100;
             set<int>::iterator it= estado.begin();
             if (jugador == -1){
                 while (*it/100 < 5) {
-                    //cout << "amazona: " << *it/100 << endl;
                     posiciones_validas(estado, *it, pos_validas);
-                    //cout << "tiene pos validas? 0si 1no " << pos_validas.empty() << endl;
-                    if (pos_validas.empty())
-                        return 100;
-                    else
-                        if (pos_validas.size() < minimo)
-                            minimo = pos_validas.size();
-                    //cout << minimo << endl;
+                    if (!pos_validas.empty() && pos_validas.size() < minimo)
+                        minimo = pos_validas.size();
                     it++;
                 }
                 return 100 - minimo;
@@ -216,11 +211,8 @@ int funcion_heuristica (set<int> estado, int jugador, int heuristica) {
                     it++;
                 while (*it/100 < 9) {
                     posiciones_validas(estado, *it, pos_validas);
-                    if (pos_validas.empty())
-                        return 100;
-                    else
-                        if (pos_validas.size() < minimo)
-                            minimo = pos_validas.size();
+                    if (!pos_validas.empty() && pos_validas.size() < minimo)
+                        minimo = pos_validas.size();
                     it++;
                 }
                 return 100 - minimo;
