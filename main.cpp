@@ -448,7 +448,7 @@ void administra_juego(set<int> &estado, int rojas, int azules, int profundidad_r
     }       // cierra while
 
     if (gano_azul){
-        cout << "GANADOR: jugador Azul";
+        cout << " GANADOR: jugador Azul";
         int puntaje=0;
         set<int>::iterator it = estado.begin();
         for(it; it!=estado.end(); it++){
@@ -457,11 +457,12 @@ void administra_juego(set<int> &estado, int rojas, int azules, int profundidad_r
                 puntaje += pos_validas.size();
             }
         }
-        cout << " con un puntaje de: " << puntaje << endl;
-
+        cout << " con un puntaje de: " << puntaje << endl << endl << "      Presione <ENTER> para continuar";
+        cin.ignore();
+        cin.ignore();
     }
     else if (gano_rojo){
-        cout << "GANADOR: jugador Rojo";
+        cout << " GANADOR: jugador Rojo";
         int puntaje=0;
         set<int>::iterator it = estado.begin();
         for(it; it!=estado.end(); it++){
@@ -470,7 +471,10 @@ void administra_juego(set<int> &estado, int rojas, int azules, int profundidad_r
                 puntaje += pos_validas.size();
             }
         }
-        cout << " con un puntaje de: " << puntaje << endl;
+        cout << " con un puntaje de: " << puntaje << endl << endl << "      Presione <ENTER> para continuar";
+        cin.ignore();
+        cin.ignore();
+
     }
 }
 
